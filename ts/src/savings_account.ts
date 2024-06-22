@@ -14,22 +14,24 @@ export class SavingsAccount {
   params: SavingsAccountParameters;
   currentYear: number;
   value: number;
-  interestByYear: Map<number, number>;
   monthlyInterestRate: number;
+  currentAnnualInterest: number;
+  previousAnnualInterest: number;
 
   constructor(params: SavingsAccountParameters, currentYear: number) {
     this.params = params;
     this.currentYear = currentYear;
     this.value = params.initialValue;
-    this.interestByYear = new Map();
     this.monthlyInterestRate = apyToMonthlyRate(params.annualPercentageYield);
+    this.currentAnnualInterest = 0;
+    this.previousAnnualInterest = 0;
   }
 
   contribute(amount: number) {
     this.value += amount;
   }
 
-  withdraw(amount: number): number {
+  withdraw(amount: number, month: number): number {
     amount = Math.min(this.value, amount);
     this.value -= amount;
     return amount;
@@ -38,20 +40,20 @@ export class SavingsAccount {
   receiveMonthlyInterest() {
     const interest = (this.monthlyInterestRate / 100) * this.value;
     this.value += interest;
-    this.interestByYear.set(
-      this.currentYear,
-      (this.interestByYear.get(this.currentYear) ?? 0) + interest
-    );
+    this.currentAnnualInterest += interest;
   }
 
-  get1099Int(year: number): TaxDocument1099Int {
+  getPreviousYear1099Int(): TaxDocument1099Int {
     return {
-      year: year,
-      interest: this.interestByYear.get(year) ?? 0,
+      year: this.currentYear - 1,
+      accountName: this.params.name,
+      interest: this.previousAnnualInterest,
     };
   }
 
   incrementYear() {
     this.currentYear += 1;
+    this.previousAnnualInterest = this.currentAnnualInterest;
+    this.currentAnnualInterest = 0;
   }
 }

@@ -1,4 +1,4 @@
-import { JobParameters, Paystub, Job } from "../src/job";
+import { JobParameters, Job } from "../src/job";
 import { TaxDocumentW2 } from "../src/tax_document";
 
 const jobParams: JobParameters = {
@@ -37,8 +37,9 @@ describe("test Job", () => {
   });
   test("sendMonthlyPaystub", () => {
     let job = new Job(jobParams, currentYear, max401kContribution);
-    const paystub = job.sendMonthlyPaystub(new Date(2024, 6));
+    const paystub = job.sendMonthlyPaystub(7);
     let expectedContribution401k = (0.9 * max401kContribution) / 7;
+
     expect(paystub.income).toBeCloseTo(
       jobParams.initialSalary / 12 - expectedContribution401k
     );
@@ -48,7 +49,7 @@ describe("test Job", () => {
   });
   test("sendMonthlyPaystub with bonus", () => {
     let job = new Job(jobParams, currentYear, max401kContribution);
-    const paystub = job.sendMonthlyPaystub(new Date(2024, 11));
+    const paystub = job.sendMonthlyPaystub(12);
     let expectedContribution401k = (0.9 * max401kContribution) / 7;
     expect(paystub.income).toBeCloseTo(
       jobParams.initialSalary / 12 +
@@ -61,18 +62,28 @@ describe("test Job", () => {
   });
   test("getW2 empty", () => {
     let job = new Job(jobParams, currentYear, max401kContribution);
-    const w2 = job.getW2(2024);
+    const w2 = job.getPreviousYearW2();
     expect(w2.taxableIncome).toBe(0);
   });
   test("getW2 two paystubs", () => {
     let job = new Job(jobParams, currentYear, max401kContribution);
-    job.sendMonthlyPaystub(new Date(2024, 6));
-    job.sendMonthlyPaystub(new Date(2024, 7));
-    const w2 = job.getW2(2024);
+    job.sendMonthlyPaystub(7);
+    job.sendMonthlyPaystub(8);
+    job.incrementYear(3, max401kContribution);
+
     const monthlyContribution401k = (0.9 * max401kContribution) / 7;
-    expect(w2.taxableIncome).toBeCloseTo(
-      2 * (jobParams.initialSalary / 12 - monthlyContribution401k)
-    );
+    const expectedW2: TaxDocumentW2 = {
+      year: currentYear,
+      companyName: "test company",
+      employeeName: "test user",
+      taxableIncome:
+        2 * (jobParams.initialSalary / 12 - monthlyContribution401k),
+    };
+
+    const w2 = job.getPreviousYearW2();
+
+    expect(w2.year).toBe(expectedW2.year);
+    expect(w2.taxableIncome).toBeCloseTo(expectedW2.taxableIncome);
   });
   test("incrementYear", () => {
     let job = new Job(jobParams, currentYear, max401kContribution);
@@ -81,6 +92,6 @@ describe("test Job", () => {
     expect(job.currentYear).toBe(2025);
     expect(job.salary).toBeCloseTo(jobParams.initialSalary * 1.03 * 1.02);
     expect(job.bonus).toBeCloseTo(jobParams.initialBonus * 1.03 * 1.02);
-    expect(job.monthly401kContribution).toBeCloseTo(0.9 * 21000 / 12);
+    expect(job.monthly401kContribution).toBeCloseTo((0.9 * 21000) / 12);
   });
 });

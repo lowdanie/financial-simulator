@@ -1,0 +1,26 @@
+export interface ExpenseParameters {
+  name: string;
+  start: Date;
+  end: Date;
+  initialMonthlyExpense: number;
+  realIncreaseRate: number;
+}
+
+export class Expense {
+  params: ExpenseParameters;
+  monthlyExpense: number;
+
+  constructor(params: ExpenseParameters) {
+    this.params = params;
+    this.monthlyExpense = params.initialMonthlyExpense;
+  }
+
+  isActive(date: Date): boolean {
+    return this.params.start <= date && date <= this.params.end;
+  }
+
+  incrementYear(inflationRate: number) {
+    this.monthlyExpense *= 1 + inflationRate / 100;
+    this.monthlyExpense *= 1 + this.params.realIncreaseRate / 100;
+  }
+}

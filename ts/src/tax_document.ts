@@ -7,5 +7,13 @@ export interface TaxDocumentW2 {
 
 export interface TaxDocument1099Int {
     year: number
+    accountName: string
     interest: number
+}
+
+export interface TaxDocument1099R {
+    year: number
+    accountName: string
+    taxableIncome: number
+    isEarlyDistribution: boolean
 }

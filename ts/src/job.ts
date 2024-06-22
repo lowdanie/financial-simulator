@@ -45,7 +45,8 @@ export class Job {
   bonus: number;
   monthly401kContribution: number;
   currentYear: number;
-  taxableIncomeByYear: Map<number, number>;
+  currentAnnualTaxableIncome: number;
+  previousAnnualTaxableIncome: number;
 
   constructor(
     params: JobParameters,
@@ -61,47 +62,51 @@ export class Job {
       max401kContribution
     );
     this.currentYear = currentYear;
-    this.taxableIncomeByYear = new Map();
+    this.currentAnnualTaxableIncome = 0;
+    this.previousAnnualTaxableIncome = 0;
   }
 
   isActive(date: Date): boolean {
     return this.params.startDate <= date && date <= this.params.endDate;
   }
 
-  sendMonthlyPaystub(date: Date): Paystub {
+  sendMonthlyPaystub(month: number): Paystub {
     let monthlyIncome = this.salary / 12;
-    if (date.getMonth() + 1 == this.params.bonusMonth) {
+    if (month == this.params.bonusMonth) {
       monthlyIncome += this.bonus;
     }
 
-    monthlyIncome -= this.monthly401kContribution;
-    let match401k =
-      (this.params.company401kMatchRate / 100) * this.monthly401kContribution;
-
-    this.taxableIncomeByYear.set(
-      this.currentYear,
-      (this.taxableIncomeByYear.get(this.currentYear) ?? 0) + monthlyIncome
+    const monthly401kContribution = Math.min(
+      monthlyIncome,
+      this.monthly401kContribution
     );
+    monthlyIncome -= monthly401kContribution;
+    let match401k =
+      (this.params.company401kMatchRate / 100) * monthly401kContribution;
+
+    this.currentAnnualTaxableIncome += monthlyIncome;
 
     return {
       companyName: this.params.companyName,
       employeeName: this.params.employeeName,
       income: monthlyIncome,
-      contribution401k: this.monthly401kContribution + match401k,
+      contribution401k: monthly401kContribution + match401k,
     };
   }
 
-  getW2(year: number): TaxDocumentW2 {
+  getPreviousYearW2(): TaxDocumentW2 {
     return {
-      year: year,
+      year: this.currentYear - 1,
       companyName: this.params.companyName,
       employeeName: this.params.employeeName,
-      taxableIncome: this.taxableIncomeByYear.get(year) ?? 0,
+      taxableIncome: this.previousAnnualTaxableIncome,
     };
   }
 
   incrementYear(inflationRate: number, max401kContribution: number) {
     this.currentYear += 1;
+    this.previousAnnualTaxableIncome = this.currentAnnualTaxableIncome;
+    this.currentAnnualTaxableIncome = 0;
 
     if (this.params.endDate.getFullYear() < this.currentYear) {
       return;
@@ -124,3 +129,4 @@ export class Job {
     );
   }
 }
+

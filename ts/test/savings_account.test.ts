@@ -25,13 +25,13 @@ describe("test SavingsAccount", () => {
   });
   test("withdraw", () => {
     let account = new SavingsAccount(params, currentYear);
-    const amount = account.withdraw(10000);
+    const amount = account.withdraw(10000, 1);
     expect(account.value).toBe(90000);
     expect(amount).toBe(10000);
   });
   test("withdraw max", () => {
     let account = new SavingsAccount(params, currentYear);
-    const amount = account.withdraw(100001);
+    const amount = account.withdraw(100001, 1);
     expect(account.value).toBe(0);
     expect(amount).toBe(100000);
   });
@@ -42,13 +42,16 @@ describe("test SavingsAccount", () => {
   });
   test("get1099Int no interest", () => {
     let account = new SavingsAccount(params, currentYear);
-    const doc1099Int = account.get1099Int(currentYear);
+    const doc1099Int = account.getPreviousYear1099Int();
     expect(doc1099Int.interest).toBe(0);
   });
   test("get1099Int", () => {
     let account = new SavingsAccount(params, currentYear);
     account.receiveMonthlyInterest();
-    const doc1099Int = account.get1099Int(currentYear);
+    account.incrementYear();
+    const doc1099Int = account.getPreviousYear1099Int();
+
+    expect(doc1099Int.year).toBe(currentYear);
     expect(doc1099Int.interest).toBeCloseTo(2000);
   });
 });

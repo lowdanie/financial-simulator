@@ -1,3 +1,14 @@
+export interface Age {
+  years: number;
+  months: number;
+}
+
+export function ageToDate(age: Age, birthday: Date): Date {
+  let date = new Date(birthday);
+  date.setMonth(birthday.getMonth() + 12 * age.years + age.months);
+  return date;
+}
+
 export function numOverlapMonths(
   interval: { start: Date; end: Date },
   year: number
