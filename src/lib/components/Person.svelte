@@ -1,0 +1,64 @@
+<script lang="ts">
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+
+	import type { Person } from '$lib/model/person';
+	import { createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher();
+	export let person: Person;
+
+	let updatedPerson: Person = { ...person };
+	let editing = false;
+
+	function onSave() {
+		person = { ...updatedPerson };
+		dispatch('update', person);
+		editing = false;
+	}
+
+	function onCancel() {
+		editing = false;
+	}
+</script>
+
+<Card.Root>
+	<Card.Header>
+		<Card.Title>{person.name}</Card.Title>
+	</Card.Header>
+	<Card.Content>
+		{#if editing}
+			<form on:submit|preventDefault={onSave} class="grid w-full items-center gap-4">
+				<div class="flex items-center gap-2">
+					<Label for="person-name-{person.id}">Name</Label>
+					<Input bind:value={updatedPerson.name} type="text" id="person-name-{person.id}" />
+				</div>
+				<div class="flex items-center gap-2">
+					<Label for="person-age-{person.id}">Age</Label>
+					<Input bind:value={updatedPerson.age} type="number" id="person-age-{person.id}" />
+				</div>
+				<div class="flex justify-between">
+					<Button type="submit">Save</Button>
+					<Button variant="outline" on:click={onCancel}>Cancel</Button>
+				</div>
+			</form>
+		{:else}
+			<div class="grid w-full items-center gap-2">
+				<div class="flex gap-2">
+					<span class="text-sm font-medium">Name</span>
+					<span class="text-sm">{person.name}</span>
+				</div>
+				<div class="flex gap-2">
+					<span class="text-sm font-medium">Age</span>
+					<span class="text-sm">{person.age}</span>
+				</div>
+				<div class="flex justify-between">
+					<Button variant="secondary" on:click={() => (editing = true)}>Edit</Button>
+					<Button variant="destructive" on:click={() => dispatch('remove', person)}>Delete</Button>
+				</div>
+			</div>
+		{/if}
+	</Card.Content>
+</Card.Root>
