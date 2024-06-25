@@ -9,6 +9,10 @@ export function ageToDate(age: Age, birthday: Date): Date {
   return date;
 }
 
+export function dateToString(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
 export function numOverlapMonths(
   interval: { start: Date; end: Date },
   year: number

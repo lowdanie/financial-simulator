@@ -1,17 +1,18 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { Separator } from '$lib/components/ui/separator/index.js';
+
 	import Person from './Person.svelte';
 	import type { Person as PersonType } from '$lib/model/person';
+	// import type {JobParameters} from '$lib/model/job';
 
-	let people: PersonType[] = [
-		{ name: 'alice', age: 30, id: 0 },
-		{ name: 'bob', age: 25, id: 1 }
-	];
+	export let people: PersonType[];
+	// export let jobs: JobParameters[];
 
 	let nextId = people.length;
 
 	function addPerson() {
-		people = [...people, { name: 'Unknown', age: 0, id: nextId }];
+		people = [...people, { name: 'Unknown', birthday: new Date(1990, 0, 1), id: nextId }];
 		nextId += 1;
 	}
 
@@ -26,8 +27,16 @@
 	}
 </script>
 
-<div class="flex w-60 flex-col gap-2 p-2">
-	<h2 class="text-2xl">People</h2>
+<div class="flex flex-col gap-2 p-2">
+	<div>
+		<h2 class="text-2xl">People</h2>
+		<p class="text-muted-foreground">
+			The members of the household
+		</p>
+
+	</div>
+
+	<Separator />
 
 	<ul class="flex flex-col gap-4">
 		{#each people as person (person.id)}

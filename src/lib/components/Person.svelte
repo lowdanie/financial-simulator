@@ -5,15 +5,18 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 
 	import type { Person } from '$lib/model/person';
+	import { dateToString } from '$lib/model/date_utils';
 	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
 	export let person: Person;
 
 	let updatedPerson: Person = { ...person };
+	let updatedDateString = dateToString(updatedPerson.birthday);
 	let editing = false;
 
 	function onSave() {
+		updatedPerson.birthday = new Date(updatedDateString);
 		person = { ...updatedPerson };
 		dispatch('update', person);
 		editing = false;
@@ -36,8 +39,8 @@
 					<Input bind:value={updatedPerson.name} type="text" id="person-name-{person.id}" />
 				</div>
 				<div class="flex items-center gap-2">
-					<Label for="person-age-{person.id}">Age</Label>
-					<Input bind:value={updatedPerson.age} type="number" id="person-age-{person.id}" />
+					<Label for="person-birthday-{person.id}">Age</Label>
+					<Input bind:value={updatedDateString} type="date" id="person-birthday-{person.id}" />
 				</div>
 				<div class="flex justify-between">
 					<Button type="submit">Save</Button>
@@ -52,7 +55,7 @@
 				</div>
 				<div class="flex gap-2">
 					<span class="text-sm font-medium">Age</span>
-					<span class="text-sm">{person.age}</span>
+					<span class="text-sm">{dateToString(person.birthday)}</span>
 				</div>
 				<div class="flex justify-between">
 					<Button variant="secondary" on:click={() => (editing = true)}>Edit</Button>

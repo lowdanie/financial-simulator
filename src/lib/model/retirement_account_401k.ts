@@ -1,5 +1,5 @@
-import { TaxDocument1099R } from "./tax_document";
-import { Age, ageToDate } from "./date_utils";
+import type { TaxDocument1099R } from "./tax_document";
+import { type Age, ageToDate } from "./date_utils";
 import { annualToMonthlyReturnRate } from "./utils";
 
 interface TaxableIncome {
@@ -8,6 +8,7 @@ interface TaxableIncome {
 }
 
 export interface RetirementAccount401kParameters {
+  id: number;
   accountName: string;
   employeeName: string;
   initialValue: number;

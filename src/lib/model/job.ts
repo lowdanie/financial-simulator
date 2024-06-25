@@ -1,7 +1,8 @@
-import { TaxDocumentW2 } from "./tax_document";
+import { type TaxDocumentW2 } from "./tax_document";
 import { numOverlapMonths } from "./date_utils";
 
 export interface JobParameters {
+  id: number;
   companyName: string;
   employeeName: string;
   startDate: Date;
