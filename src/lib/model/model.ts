@@ -1,17 +1,22 @@
-import { Job, JobParameters } from "./job";
-import { Expense, ExpenseParameters } from "./expense";
-import { Person } from "./person";
+import { Job, type JobParameters } from "./job";
+import { Expense, type ExpenseParameters } from "./expense";
+import { type Person } from "./person";
 import {
   RetirementAccount401k,
-  RetirementAccount401kParameters,
+  type RetirementAccount401kParameters,
 } from "./retirement_account_401k";
-import { SavingsAccount, SavingsAccountParameters } from "./savings_account";
-import { TaxManager, TaxManagerParameters } from "./tax_manager";
-import { TaxDocument1099R } from "./tax_document";
+import { SavingsAccount, type SavingsAccountParameters } from "./savings_account";
+import { TaxManager, type TaxManagerParameters } from "./tax_manager";
+import type { TaxDocument1099R } from "./tax_document";
+
+export interface GeneralParameters {
+  startYear: number;
+  durationYears: number;
+  inflationRate: number;
+}
 
 export interface ModelParameters {
-  startYear: number;
-  inflationRate: number;
+  general: GeneralParameters;
   people: Person[];
   taxManager: TaxManagerParameters;
   jobs: JobParameters[];

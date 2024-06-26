@@ -23,7 +23,6 @@
 	function updatePerson(person: PersonType) {
 		const i = people.findIndex((p) => p.id == person.id);
 		people[i] = person;
-		console.log(`people: ${JSON.stringify(people)}`);
 	}
 </script>
 

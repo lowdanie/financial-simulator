@@ -1,8 +1,8 @@
-import { Age } from "./date_utils";
+import { type Age } from "./date_utils";
 import {
-  TaxDocumentW2,
-  TaxDocument1099Int,
-  TaxDocument1099R,
+  type TaxDocumentW2,
+  type TaxDocument1099Int,
+  type TaxDocument1099R,
 } from "./tax_document";
 
 export enum FilingStatus {

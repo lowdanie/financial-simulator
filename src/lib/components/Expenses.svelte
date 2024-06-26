@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { Separator } from '$lib/components/ui/separator/index.js';
+
 	import Expense from './Expense.svelte';
 	import type { ExpenseParameters } from '$lib/model/expense';
 
@@ -32,7 +34,11 @@
 </script>
 
 <div class="flex flex-col gap-2 p-2">
-	<h2 class="text-2xl">Expenses</h2>
+	<div>
+		<h2 class="text-2xl">Expenses</h2>
+	</div>
+
+	<Separator />
 
 	<ul class="flex flex-col gap-4">
 		{#each expenses as expense (expense.id)}

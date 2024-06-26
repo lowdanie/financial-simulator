@@ -1,4 +1,4 @@
-import { TaxDocument1099Int } from "./tax_document";
+import { type TaxDocument1099Int } from "./tax_document";
 
 export interface SavingsAccountParameters {
   name: string;

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
+    import { Separator } from '$lib/components/ui/separator/index.js';
+
 	import RetirementAccount401k from './RetirementAccount401k.svelte';
 	import type { RetirementAccount401kParameters } from '$lib/model/retirement_account_401k';
 	import type { Person as PersonType } from '$lib/model/person';
@@ -41,8 +43,11 @@
 </script>
 
 <div class="flex flex-col gap-2 p-2">
-	<h2 class="text-2xl">401k Accounts</h2>
+	<div>
+		<h2 class="text-2xl">401k Accounts</h2>
+	</div>
 
+	<Separator />
 	<ul class="flex flex-col gap-4">
 		{#each accounts as account (account.id)}
 			<li>

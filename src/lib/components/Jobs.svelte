@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
+    import { Separator } from '$lib/components/ui/separator/index.js';
+
 	import Job from './Job.svelte';
 	import type { JobParameters } from '$lib/model/job';
 	import type { Person as PersonType } from '$lib/model/person';
@@ -39,14 +41,18 @@
 </script>
 
 <div class="flex flex-col gap-2 p-2">
-	<h2 class="text-2xl">Jobs</h2>
+	<div>
+		<h2 class="text-2xl">Jobs</h2>
+	</div>
+
+	<Separator />
 
 	<ul class="flex flex-col gap-4">
 		{#each jobs as job (job.id)}
 			<li>
 				<Job
 					jobParams={job}
-                    {people}
+					{people}
 					on:remove={(e) => removeJob(e.detail)}
 					on:update={(e) => updateJob(e.detail)}
 				/>
