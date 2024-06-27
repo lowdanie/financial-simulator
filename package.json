@@ -9,7 +9,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
 	},
 	"jest": {
 		"roots": [
@@ -18,8 +19,19 @@
 		"testMatch": [
 			"**/?(*.)+(spec|test).+(ts|tsx|js)"
 		],
+		"extensionsToTreatAsEsm": [
+			".ts"
+		],
+		"moduleNameMapper": {
+			"^(\\.{1,2}/.*)\\.js$": "$1"
+		},
 		"transform": {
-			"^.+\\.(ts|tsx)$": "ts-jest"
+			"^.+\\.tsx?$": [
+				"ts-jest",
+				{
+					"useESM": true
+				}
+			]
 		}
 	},
 	"devDependencies": {
@@ -44,6 +56,7 @@
 	"type": "module",
 	"dependencies": {
 		"bits-ui": "^0.21.10",
+		"chart.js": "^4.4.3",
 		"clsx": "^2.1.1",
 		"lucide-svelte": "^0.396.0",
 		"tailwind-merge": "^2.3.0",

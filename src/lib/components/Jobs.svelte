@@ -6,7 +6,7 @@
 	import type { JobParameters } from '$lib/model/job';
 	import type { Person as PersonType } from '$lib/model/person';
 
-	export let jobs: JobParameters[] = [];
+	export let jobs: JobParameters[];
 	export let people: PersonType[];
 
 	const defaultJobParams: JobParameters = {

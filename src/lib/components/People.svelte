@@ -29,10 +29,7 @@
 <div class="flex flex-col gap-2 p-2">
 	<div>
 		<h2 class="text-2xl">People</h2>
-		<p class="text-muted-foreground">
-			The members of the household
-		</p>
-
+		<p class="text-muted-foreground">The members of the household</p>
 	</div>
 
 	<Separator />

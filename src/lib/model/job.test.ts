@@ -1,7 +1,8 @@
-import { JobParameters, Job } from "../src/job";
-import { TaxDocumentW2 } from "../src/tax_document";
+import { type JobParameters, Job } from "./job";
+import { type TaxDocumentW2 } from "./tax_document";
 
 const jobParams: JobParameters = {
+  id: 0,
   companyName: "test company",
   employeeName: "test user",
   startDate: new Date(2024, 5),

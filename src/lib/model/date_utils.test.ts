@@ -1,4 +1,4 @@
-import { numOverlapMonths } from "../src/date_utils";
+import { numOverlapMonths } from "./date_utils";
 
 describe("test numOverlapMonths", () => {
   test("interval before year", () => {

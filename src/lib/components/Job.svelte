@@ -4,6 +4,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
+	import NumberInput from './NumberInput.svelte';
 
 	import type { JobParameters } from '$lib/model/job';
 	import type { Person as PersonType } from '$lib/model/person';
@@ -14,17 +15,27 @@
 	export let jobParams: JobParameters;
 	export let people: PersonType[];
 
-	let updatedJobParams: JobParameters = { ...jobParams };
-	let updatedDateStrings = {
-		startDate: dateToString(jobParams.startDate),
-		endDate: dateToString(jobParams.endDate)
+	let updatedJobParams: JobParameters;
+	let updatedDateStrings: {
+		startDate: string;
+		endDate: string;
 	};
-    let selectedPerson = {value: people[0].name, label: people[0].name};
+
+	let selectedPerson: {
+		value: string;
+		label: string;
+	};
 
 	let editing = false;
 
 	function onEdit() {
 		updatedJobParams = { ...jobParams };
+		updatedDateStrings = {
+			startDate: dateToString(jobParams.startDate),
+			endDate: dateToString(jobParams.endDate)
+		};
+		selectedPerson = { value: jobParams.employeeName, label: jobParams.employeeName };
+
 		editing = true;
 	}
 	function onSave() {
@@ -90,49 +101,43 @@
 				</div>
 				<div class="flex items-center gap-2">
 					<Label for="job-initial-salary-{jobParams.id}">Initial Salary</Label>
-					<Input
+					<NumberInput
 						bind:value={updatedJobParams.initialSalary}
-						type="number"
 						id="job-initial-salary-{jobParams.id}"
 					/>
 				</div>
 				<div class="flex items-center gap-2">
 					<Label for="job-initial-bonus-{jobParams.id}">Initial Bonus</Label>
-					<Input
+					<NumberInput
 						bind:value={updatedJobParams.initialBonus}
-						type="number"
 						id="job-initial-bonus-{jobParams.id}"
 					/>
 				</div>
 				<div class="flex items-center gap-2">
 					<Label for="job-bonus-month-{jobParams.id}">Bonus Month</Label>
-					<Input
+					<NumberInput
 						bind:value={updatedJobParams.bonusMonth}
-						type="number"
 						id="job-bonus-month-{jobParams.id}"
 					/>
 				</div>
 				<div class="flex items-center gap-2">
 					<Label for="job-percent-401k-{jobParams.id}">Percent of Max 401k</Label>
-					<Input
+					<NumberInput
 						bind:value={updatedJobParams.percentOfMax401kContribution}
-						type="number"
 						id="job-percent-401k-{jobParams.id}"
 					/>
 				</div>
 				<div class="flex items-center gap-2">
 					<Label for="job-401k-match-rate{jobParams.id}">401k Match Rate</Label>
-					<Input
+					<NumberInput
 						bind:value={updatedJobParams.company401kMatchRate}
-						type="number"
 						id="job-401k-match-rate{jobParams.id}"
 					/>
 				</div>
 				<div class="flex items-center gap-2">
 					<Label for="job-real-raise-rate{jobParams.id}">Real Raise Rate</Label>
-					<Input
+					<NumberInput
 						bind:value={updatedJobParams.realRaiseRate}
-						type="number"
 						id="job-real-raise-rate{jobParams.id}"
 					/>
 				</div>

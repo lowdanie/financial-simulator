@@ -4,6 +4,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
+	import NumberInput from './NumberInput.svelte';
 
 	import type { RetirementAccount401kParameters } from '$lib/model/retirement_account_401k';
 	import type { Person } from '$lib/model/person';
@@ -57,19 +58,11 @@
 				</div>
 				<div class="flex items-center gap-2">
 					<Label for="401k-value-{account.id}">Initial Value</Label>
-					<Input
-						bind:value={updatedAccount.initialValue}
-						type="number"
-						id="401k-value-{account.id}"
-					/>
+					<NumberInput bind:value={updatedAccount.initialValue} id="401k-value-{account.id}" />
 				</div>
 				<div class="flex items-center gap-2">
 					<Label for="401k-return-{account.id}">Annual Return Rate</Label>
-					<Input
-						bind:value={updatedAccount.annualReturnRate}
-						type="number"
-						id="401k-return-{account.id}"
-					/>
+					<NumberInput bind:value={updatedAccount.annualReturnRate} id="401k-return-{account.id}" />
 				</div>
 				<div class="flex justify-between">
 					<Button type="submit">Save</Button>

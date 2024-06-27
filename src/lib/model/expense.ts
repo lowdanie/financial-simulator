@@ -1,4 +1,5 @@
 export interface ExpenseParameters {
+  id: number;
   name: string;
   start: Date;
   end: Date;

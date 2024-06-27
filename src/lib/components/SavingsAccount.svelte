@@ -3,6 +3,7 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
+	import NumberInput from './NumberInput.svelte';
 
 	import type { SavingsAccountParameters } from '$lib/model/savings_account';
 
@@ -13,6 +14,8 @@
 
 	function onSave() {
 		account = { ...updatedAccount };
+		console.log('updated savings:');
+		console.log(JSON.stringify(updatedAccount));
 		editing = false;
 	}
 
@@ -27,7 +30,7 @@
 		<p class="text-muted-foreground">The default location to store cash</p>
 	</div>
 
-	<Separator class="mb-5"/>
+	<Separator class="mb-5" />
 
 	{#if editing}
 		<form on:submit|preventDefault={onSave} class="grid w-full items-center gap-4">
@@ -37,11 +40,11 @@
 			</div>
 			<div class="flex items-center gap-2">
 				<Label for="savings-value">Initial Value</Label>
-				<Input bind:value={updatedAccount.initialValue} type="number" id="savings-value" />
+				<NumberInput bind:value={updatedAccount.initialValue} id="savings-value" />
 			</div>
 			<div class="flex items-center gap-2">
 				<Label for="savings-apy">Annual Percentage Yield</Label>
-				<Input bind:value={updatedAccount.annualPercentageYield} type="number" id="savings-apy" />
+				<NumberInput bind:value={updatedAccount.annualPercentageYield} id="savings-apy" />
 			</div>
 			<div class="flex justify-between">
 				<Button type="submit">Save</Button>

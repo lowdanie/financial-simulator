@@ -3,6 +3,7 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
+	import NumberInput from './NumberInput.svelte';
 
 	import type { ExpenseParameters } from '$lib/model/expense';
 	import { dateToString } from '$lib/model/date_utils';
@@ -21,6 +22,8 @@
 			start: new Date(updatedDateStrings.start),
 			end: new Date(updatedDateStrings.end)
 		};
+        console.log("new expense:")
+        console.log(JSON.stringify(expense));
 		dispatch('update', expense);
 		editing = false;
 	}
@@ -55,17 +58,15 @@
 				</div>
 				<div class="flex items-center gap-2">
 					<Label for="expense-initial-{expense.id}">Monthly Expense</Label>
-					<Input
+					<NumberInput
 						bind:value={updatedExpense.initialMonthlyExpense}
-						type="number"
 						id="expense-initial-{expense.id}"
 					/>
 				</div>
 				<div class="flex items-center gap-2">
 					<Label for="expense-increase-{expense.id}">Real Increase Rate</Label>
-					<Input
+					<NumberInput
 						bind:value={updatedExpense.realIncreaseRate}
-						type="number"
 						id="expense-increase-{expense.id}"
 					/>
 				</div>
