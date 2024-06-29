@@ -9,10 +9,19 @@
 	import GeneralParameters from './GeneralParameters.svelte';
 
 	import type { ModelParameters } from '$lib/model/model';
+	import Brokerage from './Brokerage.svelte';
 
 	export let params: ModelParameters;
 
-	let paramNames = ['General', 'People', 'Jobs', 'Expenses', 'Savings Account', '401k Accounts'];
+	let paramNames = [
+		'General',
+		'People',
+		'Jobs',
+		'Expenses',
+		'Savings Account',
+		'Brokerage Account',
+		'401k Accounts'
+	];
 	let activeParamName = 'General';
 
 	function getDisplayType(isActive: boolean): string {
@@ -39,6 +48,7 @@
 				bind:startYear={params.startYear}
 				bind:durationYears={params.durationYears}
 				bind:inflationRate={params.inflationRate}
+				bind:targetEmergencyFund={params.targetEmergencyFund}
 				bind:taxParams={params.taxManager}
 			/>
 		</div>
@@ -53,6 +63,9 @@
 		</div>
 		<div class={getDisplayType(activeParamName == 'Savings Account')}>
 			<SavingsAccount bind:account={params.savingsAccount} />
+		</div>
+		<div class={getDisplayType(activeParamName == 'Brokerage Account')}>
+			<Brokerage bind:account={params.brokerageAccount} />
 		</div>
 		<div class={getDisplayType(activeParamName == '401k Accounts')}>
 			<RetirementAccounts401k

@@ -33,6 +33,7 @@ describe('test TaxManager', () => {
 				}
 			],
 			[{ year: 2023, accountName: 'account', interest: 50000 }],
+			[{ year: 2023, accountName: 'brokerage', costBasis: 25, proceeds: 125 }],
 			[
 				{
 					year: 2023,
@@ -44,8 +45,9 @@ describe('test TaxManager', () => {
 		);
 		const totalIncome = 100000 + 50000 + 10000 - 29200;
 		const expectedIncomeTax = 0.1 * 22000 + 0.12 * (89450 - 22000) + 0.22 * (totalIncome - 89450);
+		const expectedCapitalGainsTax = 0.15 * 100;
 		const expected401kPenalty = 0.1 * 10000;
 
-		expect(tax).toBeCloseTo(expectedIncomeTax + expected401kPenalty);
+		expect(tax).toBeCloseTo(expectedIncomeTax + expectedCapitalGainsTax + expected401kPenalty);
 	});
 });

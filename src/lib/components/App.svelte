@@ -12,6 +12,7 @@
 		startYear: 2025,
 		durationYears: 50,
 		inflationRate: 3,
+		targetEmergencyFund: 10000,
 		people: [],
 		jobs: [],
 		expenses: [],
@@ -20,6 +21,13 @@
 			name: 'Savings Account',
 			initialValue: 0,
 			annualPercentageYield: 4
+		},
+		brokerageAccount: {
+			accountName: 'Brokerage Account',
+			initialValue: 0,
+			initialCostBasis: 0,
+			annualReturnRate: 7,
+			managementFeeRate: 0.5
 		},
 		taxManager: {
 			filingStatus: FilingStatus.JOINT
@@ -35,7 +43,7 @@
 
 	<Separator class="my-6" />
 
-	<div class="flex gap-10 h-fit">
+	<div class="flex h-fit gap-10">
 		<Model bind:params />
 		<Forecast modelParams={params} />
 	</div>

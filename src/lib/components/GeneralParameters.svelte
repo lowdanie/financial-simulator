@@ -11,12 +11,14 @@
 	export let startYear: number;
 	export let durationYears: number;
 	export let inflationRate: number;
+	export let targetEmergencyFund: number;
 	export let taxParams: TaxManagerParameters;
 
 	let updatedParams: {
 		startYear: number;
 		durationYears: number;
 		inflationRate: number;
+		targetEmergencyFund: number;
 	};
 
 	interface FilingStatusSelection {
@@ -37,7 +39,8 @@
 		updatedParams = {
 			startYear: startYear,
 			durationYears: durationYears,
-			inflationRate: inflationRate
+			inflationRate: inflationRate,
+			targetEmergencyFund: targetEmergencyFund
 		};
 		selectedFilingStatus = {
 			label: taxParams.filingStatus.toString(),
@@ -48,7 +51,7 @@
 	}
 
 	function onSave() {
-		({ startYear, durationYears, inflationRate } = updatedParams);
+		({ startYear, durationYears, inflationRate, targetEmergencyFund } = updatedParams);
 		taxParams.filingStatus = selectedFilingStatus.value;
 		editing = false;
 	}
@@ -78,6 +81,10 @@
 			<div class="flex items-center gap-2">
 				<Label for="general-inflation">Inflation Rate</Label>
 				<NumberInput bind:value={updatedParams.inflationRate} id="general-inflation" />
+			</div>
+			<div class="flex items-center gap-2">
+				<Label for="general-emergency">Target Emergency Fund</Label>
+				<NumberInput bind:value={updatedParams.targetEmergencyFund} id="general-emergency" />
 			</div>
 			<div class="flex items-center gap-2">
 				<Label for="general-filing-status">Tax Filing Status</Label>
@@ -113,6 +120,10 @@
 			<div class="flex gap-2">
 				<span class="text-sm font-medium">Inflation Rate</span>
 				<span class="text-sm">{inflationRate}</span>
+			</div>
+			<div class="flex gap-2">
+				<span class="text-sm font-medium">Target Emergency Fund</span>
+				<span class="text-sm">{targetEmergencyFund}</span>
 			</div>
 			<div class="flex gap-2">
 				<span class="text-sm font-medium">Tax Filing Status</span>

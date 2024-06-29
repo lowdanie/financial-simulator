@@ -8,33 +8,39 @@ import {
 import { SavingsAccount, type SavingsAccountParameters } from './savings_account';
 import { TaxManager, type TaxManagerParameters } from './tax_manager';
 import type { TaxDocument1099R } from './tax_document';
+import { BrokerageAccount, type BrokerageAccountParameters } from './brokerage_account';
 
 export interface ModelParameters {
 	startYear: number;
 	durationYears: number;
 	inflationRate: number;
+	targetEmergencyFund: number;
 	people: Person[];
 	taxManager: TaxManagerParameters;
 	jobs: JobParameters[];
 	expenses: ExpenseParameters[];
 	savingsAccount: SavingsAccountParameters;
+	brokerageAccount: BrokerageAccountParameters;
 	retirement401kAccounts: RetirementAccount401kParameters[];
 }
 
 export class ModelState {
 	currentDate: Date;
 	inflationRate: number;
+	targetEmergencyFund: number;
 	personByName: Map<string, Person>;
 	taxManager: TaxManager;
 	jobs: Job[];
 	expenses: Expense[];
 	savingsAccount: SavingsAccount;
+	brokerageAccount: BrokerageAccount;
 	retirement401kAccountByEmployeeName: Map<string, RetirementAccount401k>;
 	isBankrupt: boolean;
 
 	constructor(params: ModelParameters) {
 		this.currentDate = new Date(params.startYear, 0);
 		this.inflationRate = params.inflationRate;
+		this.targetEmergencyFund = params.targetEmergencyFund;
 
 		this.personByName = new Map();
 		for (let person of params.people) {
@@ -56,6 +62,7 @@ export class ModelState {
 		}
 
 		this.savingsAccount = new SavingsAccount(params.savingsAccount, params.startYear);
+		this.brokerageAccount = new BrokerageAccount(params.brokerageAccount, params.startYear);
 
 		this.retirement401kAccountByEmployeeName = new Map();
 		for (let retirement401kParams of params.retirement401kAccounts) {
@@ -78,7 +85,12 @@ export class ModelState {
 	}
 
 	depositCash(amount: number) {
-		this.savingsAccount.contribute(amount);
+		let savingsAccountDeposit = Math.min(
+			amount,
+			Math.max(0, this.targetEmergencyFund - this.savingsAccount.value)
+		);
+		this.savingsAccount.contribute(savingsAccountDeposit);
+		this.brokerageAccount.contribute(amount - savingsAccountDeposit);
 	}
 
 	withdrawCash(amount: number): number {
@@ -89,7 +101,7 @@ export class ModelState {
 			return a.penaltyFreeWithdrawalDate.getTime() - b.penaltyFreeWithdrawalDate.getTime();
 		});
 		const accountsByWithdrawOrder = Array.prototype.concat(
-			[this.savingsAccount],
+			[this.savingsAccount, this.brokerageAccount],
 			accounts401kByWithdrawalDate
 		);
 
@@ -104,18 +116,19 @@ export class ModelState {
 	computeTaxes() {
 		const docW2s = this.jobs.map((job) => job.getPreviousYearW2());
 		const doc1099Ints = [this.savingsAccount.getPreviousYear1099Int()];
-
+		const doc1099Bs = [this.brokerageAccount.getPreviousYear1099B()];
 		let doc1099Rs: TaxDocument1099R[] = [];
 		for (let account of this.retirement401kAccountByEmployeeName.values()) {
 			doc1099Rs = doc1099Rs.concat(account.getPreviousYear1099Rs());
 		}
 
-		return this.taxManager.computePreviousYearFederalTax(docW2s, doc1099Ints, doc1099Rs);
+		return this.taxManager.computePreviousYearFederalTax(docW2s, doc1099Ints, doc1099Bs, doc1099Rs);
 	}
 
 	executeMonth() {
 		// Credit
 		this.savingsAccount.receiveMonthlyInterest();
+		this.brokerageAccount.receiveMonthlyReturn();
 		this.retirement401kAccountByEmployeeName.forEach((account) => {
 			account.receiveMonthlyReturn();
 		});
@@ -165,6 +178,7 @@ export class ModelState {
 			);
 			this.expenses.forEach((expense) => expense.incrementYear(this.inflationRate));
 			this.savingsAccount.incrementYear();
+			this.brokerageAccount.incrementYear();
 			this.retirement401kAccountByEmployeeName.forEach((account) => account.incrementYear());
 		}
 
@@ -177,6 +191,6 @@ export class ModelState {
 		for (let account of this.retirement401kAccountByEmployeeName.values()) {
 			totalRetirement += account.value;
 		}
-		return this.savingsAccount.value + totalRetirement;
+		return this.savingsAccount.value + this.brokerageAccount.value + totalRetirement;
 	}
 }

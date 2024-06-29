@@ -3,11 +3,13 @@ import { FilingStatus } from './tax_manager';
 
 const SAVINGS_MONTHLY_RETURN = 2;
 const RETIREMENT_MONTHLY_RETURN = 3;
+const BROKERAGE_MONTHLY_RETURN = 4;
 
 const MODEL_PARAMS: ModelParameters = {
 	startYear: 2025,
 	durationYears: 50,
 	inflationRate: 3,
+	targetEmergencyFund: 1000,
 	people: [
 		{
 			id: 0,
@@ -48,6 +50,13 @@ const MODEL_PARAMS: ModelParameters = {
 		initialValue: 50000,
 		annualPercentageYield: 100 * (Math.pow(1 + SAVINGS_MONTHLY_RETURN / 100, 12) - 1)
 	},
+	brokerageAccount: {
+		accountName: 'brokerage',
+		initialCostBasis: 100,
+		initialValue: 200,
+		annualReturnRate: 100 * (Math.pow(1 + BROKERAGE_MONTHLY_RETURN / 100, 12) - 1),
+		managementFeeRate: 1
+	},
 	retirement401kAccounts: [
 		{
 			id: 0,
@@ -67,7 +76,7 @@ describe('test Model', () => {
 			[
 				'alice',
 				{
-          id: 0,
+					id: 0,
 					name: 'alice',
 					birthday: new Date(1990, 1, 10)
 				}
@@ -89,12 +98,14 @@ describe('test Model', () => {
 		const expectedMonthlyExpense = 1000;
 		const expectedBalance = expectedMonthlySalary - expectedMonthlyExpense;
 
-		const expectedSavingsValue = (1 + SAVINGS_MONTHLY_RETURN / 100) * 50000 + expectedBalance;
+		const expectedSavingsValue = (1 + SAVINGS_MONTHLY_RETURN / 100) * 50000;
+		const expectedBrokerageValue = (1 + BROKERAGE_MONTHLY_RETURN / 100) * 200 + expectedBalance;
 		const expected401kValue =
 			(1 + RETIREMENT_MONTHLY_RETURN / 100) * 10000 + 1.1 * expectedMonthly401kContribution;
 
 		expect(model.currentDate.getTime()).toBe(nextDate.getTime());
 		expect(model.savingsAccount.value).toBeCloseTo(expectedSavingsValue);
+		expect(model.brokerageAccount.value).toBeCloseTo(expectedBrokerageValue);
 		expect(model.retirement401kAccountByEmployeeName.get('alice')?.value).toBeCloseTo(
 			expected401kValue
 		);

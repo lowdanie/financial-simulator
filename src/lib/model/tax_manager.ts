@@ -1,5 +1,10 @@
 import { type Age } from './date_utils';
-import { type TaxDocumentW2, type TaxDocument1099Int, type TaxDocument1099R } from './tax_document';
+import {
+	type TaxDocumentW2,
+	type TaxDocument1099Int,
+	type TaxDocument1099R,
+	type TaxDocument1099B
+} from './tax_document';
 
 export enum FilingStatus {
 	JOINT = 'Joint',
@@ -120,6 +125,15 @@ function computeFederalIncomeTax(
 	return computeProgressiveTax(taxableIncome, taxData.incomeTaxBrackets);
 }
 
+function computeCapitalGainsTax(taxData: TaxData, doc1099Bs: TaxDocument1099B[]): number {
+	let totalGains = doc1099Bs.reduce(
+		(previousValue, doc) => previousValue + Math.max(0, doc.proceeds - doc.costBasis),
+		0
+	);
+
+	return (taxData.capitalGainsRate / 100) * totalGains;
+}
+
 export interface TaxManagerParameters {
 	filingStatus: FilingStatus;
 }
@@ -140,11 +154,13 @@ export class TaxManager {
 	computePreviousYearFederalTax(
 		docW2s: TaxDocumentW2[],
 		doc1099Ints: TaxDocument1099Int[],
+		doc1099Bs: TaxDocument1099B[],
 		doc1099Rs: TaxDocument1099R[]
 	): number {
 		const taxData = this.previousTaxData;
 
 		const incomeTax = computeFederalIncomeTax(taxData, docW2s, doc1099Ints, doc1099Rs);
+		const capitalGainsTax = computeCapitalGainsTax(taxData, doc1099Bs);
 
 		let early401kWithdrawalPenalty = 0;
 		for (let d of doc1099Rs) {
@@ -154,7 +170,7 @@ export class TaxManager {
 			}
 		}
 
-		return incomeTax + early401kWithdrawalPenalty;
+		return incomeTax + capitalGainsTax + early401kWithdrawalPenalty;
 	}
 
 	getMax401kContribution() {
