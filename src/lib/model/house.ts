@@ -3,6 +3,7 @@ import type { TaxDocument1098 } from './tax_document';
 import { annualToMonthlyReturnRate } from './utils';
 
 export interface HouseParameters {
+	id: number;
 	name: string;
 	buyDate: Date;
 	sellDate: Date;
@@ -14,8 +15,8 @@ export interface HouseParameters {
 	downPaymentRate: number;
 
 	// If buyDate < today
-	remainingPrincipal: number;
-	homeBuyPrice: number;
+	remainingPrincipal?: number;
+	homeBuyPrice?: number;
 
 	monthlyCommonFee: number;
 	propertyTaxRate: number;
@@ -77,6 +78,13 @@ export class House {
 		this.monthlyMortgageRate = params.mortgageRate / 12;
 
 		if (params.buyDate < new Date(year, 0)) {
+			if (params.remainingPrincipal === undefined) {
+				throw 'The remaining principal must be set for homes that were already bought.';
+			}
+			if (params.homeBuyPrice === undefined) {
+				throw 'The home buy price must be set for homes that were already bought.';
+			}
+
 			this.boughtHome = true;
 			this.remainingPrincipal = params.remainingPrincipal;
 			this.monthlyMortgagePayment = computeMonthlyMortgagePayment(
@@ -111,7 +119,7 @@ export class House {
 
 	sellHome(): number {
 		this.soldHome = true;
-		let costs = (this.params.closingCostRate / 100) * this.homeValue;
+		let costs = (this.params.sellingCostRate / 100) * this.homeValue;
 		costs += this.remainingPrincipal;
 
 		return this.homeValue - costs;
@@ -187,5 +195,13 @@ export class House {
 				)) /
 			12;
 		return (taxRate / 100) * this.previousTaxInfo.assessedHomeValue;
+	}
+
+	getHomeEquity(): number {
+		if (this.boughtHome && !this.soldHome) {
+			return this.homeValue - this.remainingPrincipal;
+		}
+
+		return 0;
 	}
 }
