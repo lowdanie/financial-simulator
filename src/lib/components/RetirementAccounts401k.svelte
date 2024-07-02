@@ -3,7 +3,10 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 
 	import RetirementAccount401k from './RetirementAccount401k.svelte';
-	import type { RetirementAccount401kParameters } from '$lib/model/retirement_account_401k';
+	import {
+		type RetirementAccount401kParameters,
+		generateRetirement401kId
+	} from '$lib/model/retirement_account_401k';
 	import type { Person as PersonType } from '$lib/model/person';
 
 	export let accounts: RetirementAccount401kParameters[];
@@ -12,24 +15,22 @@
 	const defaultParams: RetirementAccount401kParameters = {
 		id: 0,
 		accountName: '',
-		employeeName: '',
+		employeeId: 0,
 		initialValue: 0,
 		annualReturnRate: 7
 	};
 
-	let nextId = 0;
-
 	function addAccount() {
+		const accountId = generateRetirement401kId();
 		accounts = [
 			...accounts,
 			{
 				...defaultParams,
-				id: nextId,
-				accountName: `401k (${nextId})`,
-				employeeName: people[0].name
+				id: accountId,
+				accountName: `401k (${accountId})`,
+				employeeId: people[0].id
 			}
 		];
-		nextId += 1;
 	}
 
 	function removeAccount(account: RetirementAccount401kParameters) {

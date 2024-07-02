@@ -27,17 +27,16 @@ describe('test TaxManager', () => {
 			[
 				{
 					year: 2023,
-					companyName: 'company',
-					employeeName: 'employee',
+					companyId: 0,
+					employeeId: 1,
 					taxableIncome: 100000
 				}
 			],
-			[{ year: 2023, accountName: 'account', interest: 50000 }],
-			[{ year: 2023, accountName: 'brokerage', costBasis: 25, proceeds: 125 }],
+			[{ year: 2023, interest: 50000 }],
+			[{ year: 2023, costBasis: 25, proceeds: 125 }],
 			[
 				{
 					year: 2023,
-					accountName: 'account',
 					taxableIncome: 10000,
 					isEarlyDistribution: true
 				}

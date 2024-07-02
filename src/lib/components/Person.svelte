@@ -18,7 +18,6 @@
 	function onEdit() {
 		updatedPerson = { ...person };
 		updatedDateString = dateToInputDateString(updatedPerson.birthday);
-		console.log(`Person date string: ${updatedDateString}`);
 		editing = true;
 	}
 	function onSave() {
@@ -38,7 +37,7 @@
 		<Card.Title>{person.name}</Card.Title>
 	</Card.Header>
 	<Card.Content>
-		{#if editing}
+		{#if editing} 
 			<form on:submit|preventDefault={onSave} class="grid w-full items-center gap-4">
 				<div class="flex items-center gap-2">
 					<Label for="person-name-{person.id}">Name</Label>

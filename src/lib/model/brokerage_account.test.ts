@@ -43,10 +43,12 @@ describe('test BrokerageAccount', () => {
 
 		const expectedDoc: TaxDocument1099B = {
 			year: 2020,
-			accountName: 'test account',
 			costBasis: 25,
 			proceeds: 100
 		};
-		expect(account.getPreviousYear1099B()).toStrictEqual(expectedDoc);
+		const received1098 = account.getPreviousYear1099B();
+		expect(received1098.year).toBe(expectedDoc.year);
+		expect(received1098.costBasis).toBeCloseTo(expectedDoc.costBasis);
+		expect(received1098.proceeds).toBeCloseTo(expectedDoc.proceeds);
 	});
 });

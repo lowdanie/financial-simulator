@@ -2,6 +2,11 @@ import { numOverlapMonths } from './date_utils';
 import type { TaxDocument1098 } from './tax_document';
 import { annualToMonthlyReturnRate } from './utils';
 
+let houseId = 0;
+export function generateHouseId() {
+	return houseId++;
+}
+
 export interface HouseParameters {
 	id: number;
 	name: string;

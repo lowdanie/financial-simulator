@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Separator } from '$lib/components/ui/separator/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
 
 	import Model from './Model.svelte';
 	import Forecast from './Forecast.svelte';

@@ -62,7 +62,6 @@ export class BrokerageAccount {
 	getPreviousYear1099B(): TaxDocument1099B {
 		return {
 			year: this.currentYear - 1,
-			accountName: this.params.accountName,
 			costBasis: this.previousTaxInfo.costBasis,
 			proceeds: this.previousTaxInfo.proceeds
 		};

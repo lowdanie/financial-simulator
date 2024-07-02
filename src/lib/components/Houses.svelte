@@ -3,7 +3,7 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 
 	import House from './House.svelte';
-	import type { HouseParameters } from '$lib/model/house';
+	import { type HouseParameters, generateHouseId } from '$lib/model/house';
 
 	export let houses: HouseParameters[];
 	export let modelStartYear: number;
@@ -26,11 +26,9 @@
 		sellingCostRate: 5
 	};
 
-	let nextId = 0;
-
 	function addHouse() {
-		houses = [...houses, { ...defaultHouseParams, id: nextId, name: `House (${nextId})` }];
-		nextId += 1;
+		const houseId = generateHouseId();
+		houses = [...houses, { ...defaultHouseParams, id: houseId, name: `House (${houseId})` }];
 	}
 
 	function removeHouse(house: HouseParameters) {

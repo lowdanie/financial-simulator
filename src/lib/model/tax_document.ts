@@ -1,26 +1,23 @@
 export interface TaxDocumentW2 {
 	year: number;
-	companyName: string;
-	employeeName: string;
+	companyId: number;
+	employeeId: number;
 	taxableIncome: number;
 }
 
 export interface TaxDocument1099Int {
 	year: number;
-	accountName: string;
 	interest: number;
 }
 
 export interface TaxDocument1099R {
 	year: number;
-	accountName: string;
 	taxableIncome: number;
 	isEarlyDistribution: boolean;
 }
 
 export interface TaxDocument1099B {
 	year: number;
-	accountName: string;
 	costBasis: number;
 	proceeds: number;
 }

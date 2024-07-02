@@ -16,9 +16,30 @@
 
 	let updatedAccount: RetirementAccount401kParameters = { ...account };
 	let editing = false;
-	let selectedPerson = { value: people[0].name, label: people[0].name };
+	let selectedPerson: { value: string; label: string };
+
+	function getEmployeeName(employeeId: number): string {
+		const employee = people.find((x) => x.id == employeeId);
+		if (employee == undefined) {
+			throw `Unexpected employee: ${employeeId}`;
+		}
+		return employee.name;
+	}
+
+	function onEdit() {
+		updatedAccount = { ...account };
+
+		selectedPerson = {
+			value: account.employeeId.toString(),
+			label: getEmployeeName(account.employeeId)
+		};
+
+		editing = true;
+	}
 
 	function onSave() {
+		updatedAccount.employeeId = parseInt(selectedPerson.value);
+
 		account = { ...updatedAccount };
 		dispatch('update', account);
 		editing = false;
@@ -50,7 +71,7 @@
 							<Select.Group>
 								<Select.Label>People</Select.Label>
 								{#each people as person}
-									<Select.Item value={person.name} label={person.name}>{person.name}</Select.Item>
+									<Select.Item value={person.id} label={person.name}>{person.name}</Select.Item>
 								{/each}
 							</Select.Group>
 						</Select.Content>
@@ -77,7 +98,7 @@
 				</div>
 				<div class="flex gap-2">
 					<span class="text-sm font-medium">Employee</span>
-					<span class="text-sm">{account.employeeName}</span>
+					<span class="text-sm">{getEmployeeName(account.employeeId)}</span>
 				</div>
 				<div class="flex gap-2">
 					<span class="text-sm font-medium">Initial Value</span>
@@ -88,7 +109,7 @@
 					<span class="text-sm">{account.annualReturnRate}</span>
 				</div>
 				<div class="flex justify-between">
-					<Button variant="secondary" on:click={() => (editing = true)}>Edit</Button>
+					<Button variant="secondary" on:click={onEdit}>Edit</Button>
 					<Button variant="destructive" on:click={() => dispatch('remove', account)}>Delete</Button>
 				</div>
 			</div>

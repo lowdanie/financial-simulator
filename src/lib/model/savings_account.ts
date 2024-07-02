@@ -46,7 +46,6 @@ export class SavingsAccount {
   getPreviousYear1099Int(): TaxDocument1099Int {
     return {
       year: this.currentYear - 1,
-      accountName: this.params.name,
       interest: this.previousAnnualInterest,
     };
   }

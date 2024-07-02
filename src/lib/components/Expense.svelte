@@ -13,7 +13,10 @@
 	export let expense: ExpenseParameters;
 
 	let updatedExpense: ExpenseParameters = { ...expense };
-	let updatedDateStrings = { start: dateToInputMonthString(expense.start), end: dateToInputMonthString(expense.end) };
+	let updatedDateStrings = {
+		start: dateToInputMonthString(expense.start),
+		end: dateToInputMonthString(expense.end)
+	};
 	let editing = false;
 
 	function onSave() {
@@ -22,8 +25,6 @@
 			start: inputMonthStringToDate(updatedDateStrings.start),
 			end: inputMonthStringToDate(updatedDateStrings.end)
 		};
-		console.log('new expense:');
-		console.log(JSON.stringify(expense));
 		dispatch('update', expense);
 		editing = false;
 	}

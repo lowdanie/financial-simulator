@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
-    import { Separator } from '$lib/components/ui/separator/index.js';
+	import { Separator } from '$lib/components/ui/separator/index.js';
 
 	import Job from './Job.svelte';
-	import type { JobParameters } from '$lib/model/job';
+	import { type JobParameters, generateJobId } from '$lib/model/job';
 	import type { Person as PersonType } from '$lib/model/person';
 
 	export let jobs: JobParameters[];
@@ -11,23 +11,32 @@
 
 	const defaultJobParams: JobParameters = {
 		id: 0,
-		companyName: 'company',
-		employeeName: 'alice',
+		companyName: '',
+		employeeId: 0,
 		startDate: new Date(2025, 0, 1),
 		endDate: new Date(2035, 0, 1),
 		initialSalary: 100000,
 		initialBonus: 20000,
 		bonusMonth: 12,
+		realRaiseRate: 1,
+
 		percentOfMax401kContribution: 100,
 		company401kMatchRate: 10,
-		realRaiseRate: 1
+		initial401kValue: 0,
+		annual401kReturnRate: 7
 	};
 
-	let nextId = 0;
-
 	function addJob() {
-		jobs = [...jobs, { ...defaultJobParams, id: nextId, employeeName: people[0].name }];
-		nextId += 1;
+		const jobId = generateJobId();
+		jobs = [
+			...jobs,
+			{
+				...defaultJobParams,
+				id: jobId,
+				companyName: `Company (${jobId})`,
+				employeeId: people[0].id
+			}
+		];
 	}
 
 	function removeJob(job: JobParameters) {

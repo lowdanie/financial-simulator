@@ -25,15 +25,17 @@ const MODEL_PARAMS: ModelParameters = {
 		{
 			id: 0,
 			companyName: 'company',
-			employeeName: 'alice',
+			employeeId: 0,
 			startDate: new Date(2025, 0, 1),
 			endDate: new Date(2035, 0, 1),
 			initialSalary: 100000,
 			initialBonus: 20000,
 			bonusMonth: 12,
+			realRaiseRate: 1,
 			percentOfMax401kContribution: 100,
 			company401kMatchRate: 10,
-			realRaiseRate: 1
+			initial401kValue: 10000,
+			annual401kReturnRate: 100 * (Math.pow(1 + RETIREMENT_MONTHLY_RETURN / 100, 12) - 1)
 		}
 	],
 	expenses: [
@@ -87,8 +89,8 @@ const MODEL_PARAMS: ModelParameters = {
 		{
 			id: 0,
 			accountName: '401k',
-			employeeName: 'alice',
-			initialValue: 10000,
+			employeeId: 0,
+			initialValue: 100000,
 			annualReturnRate: 100 * (Math.pow(1 + RETIREMENT_MONTHLY_RETURN / 100, 12) - 1)
 		}
 	]
@@ -98,9 +100,9 @@ describe('test Model', () => {
 	test('constructor', () => {
 		let model = new ModelState(MODEL_PARAMS);
 
-		const expectedPersonByName = new Map([
+		const expectedPersonById = new Map([
 			[
-				'alice',
+				0,
 				{
 					id: 0,
 					name: 'alice',
@@ -111,7 +113,13 @@ describe('test Model', () => {
 
 		const startDate = new Date(2025, 0);
 		expect(model.currentDate.getTime()).toBe(startDate.getTime());
-		expect(model.personByName).toStrictEqual(expectedPersonByName);
+		expect(model.personById.size).toBe(expectedPersonById.size);
+		for (let [k, v] of expectedPersonById) {
+			expect(model.personById.get(k)?.birthday.getTime()).toBe(v.birthday.getTime());
+			expect(model.personById.get(k)?.id).toBe(v.id);
+			expect(model.personById.get(k)?.name).toBe(v.name);
+		}
+		expect(model.retirement401kAccounts.length).toBe(2);
 	});
 
 	test('executeMonth', () => {
@@ -136,8 +144,6 @@ describe('test Model', () => {
 		expect(model.currentDate.getTime()).toBe(nextDate.getTime());
 		expect(model.savingsAccount.value).toBeCloseTo(expectedSavingsValue);
 		expect(model.brokerageAccount.value).toBeCloseTo(expectedBrokerageValue);
-		expect(model.retirement401kAccountByEmployeeName.get('alice')?.value).toBeCloseTo(
-			expected401kValue
-		);
+		expect(model.jobs[0].retirementAccount401k.value).toBeCloseTo(expected401kValue);
 	});
 });

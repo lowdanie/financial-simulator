@@ -27,35 +27,17 @@
 			return [];
 		}
 		let colorIdx = 0;
-
 		let netWorthDataset: Dataset = {
 			label: 'Net Worth',
 			data: [],
 			borderColor: PRIMARY_LINE_COLOR,
 			backgroundColor: PRIMARY_LINE_COLOR
 		};
-		let savingsDataset: Dataset = {
-			label: forecast.monthSummaries[0].savingsValue.name,
-			data: [],
-			borderWidth: 1,
-			borderColor: SECONDARY_LINE_COLORS[colorIdx],
-			backgroundColor: SECONDARY_LINE_COLORS[colorIdx]
-		};
-		colorIdx = (colorIdx + 1) % SECONDARY_LINE_COLORS.length;
 
-		let brokerageDataset: Dataset = {
-			label: forecast.monthSummaries[0].brokerageValue.name,
-			data: [],
-			borderWidth: 1,
-			borderColor: SECONDARY_LINE_COLORS[colorIdx],
-			backgroundColor: SECONDARY_LINE_COLORS[colorIdx]
-		};
-		colorIdx = (colorIdx + 1) % SECONDARY_LINE_COLORS.length;
-
-		let homeDatasets: Dataset[] = [];
-		for (let asset of forecast.monthSummaries[0].homeEquities) {
-			homeDatasets.push({
-				label: `${asset.name} Equity`,
+		let assetDatasets: Dataset[] = [];
+		for (let asset of forecast.monthSummaries[0].assets) {
+			assetDatasets.push({
+				label: asset.name,
 				data: [],
 				borderWidth: 1,
 				borderColor: SECONDARY_LINE_COLORS[colorIdx],
@@ -66,14 +48,12 @@
 
 		for (let monthSummary of forecast.monthSummaries) {
 			netWorthDataset.data.push(monthSummary.netWorth);
-			savingsDataset.data.push(monthSummary.savingsValue.value);
-			brokerageDataset.data.push(monthSummary.brokerageValue.value);
-			for (let i = 0; i < monthSummary.homeEquities.length; i++) {
-				homeDatasets[i].data.push(monthSummary.homeEquities[i].value);
+			for (let i = 0; i < monthSummary.assets.length; i++) {
+				assetDatasets[i].data.push(monthSummary.assets[i].value);
 			}
 		}
 
-		return [netWorthDataset, savingsDataset, brokerageDataset].concat(homeDatasets);
+		return [netWorthDataset].concat(assetDatasets);
 	}
 
 	function makeChart(ctx: HTMLCanvasElement, forecast: Forecast) {

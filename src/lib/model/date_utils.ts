@@ -11,7 +11,7 @@ export function ageToDate(age: Age, birthday: Date): Date {
 
 export function dateToInputDateString(date: Date): string {
 	const paddedMonth = (date.getMonth() + 1).toString().padStart(2, '0');
-  const paddedDate = date.getDate().toString().padStart(2, '0');
+	const paddedDate = date.getDate().toString().padStart(2, '0');
 	return `${date.getFullYear()}-${paddedMonth}-${paddedDate}`;
 }
 

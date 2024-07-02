@@ -19,9 +19,7 @@ export interface MonthAssetSummary {
 export interface MonthSummary {
 	date: Date;
 	netWorth: number;
-	homeEquities: MonthAssetSummary[];
-	savingsValue: MonthAssetSummary;
-	brokerageValue: MonthAssetSummary;
+	assets: MonthAssetSummary[];
 }
 
 export interface ModelParameters {
@@ -29,6 +27,7 @@ export interface ModelParameters {
 	durationYears: number;
 	inflationRate: number;
 	targetEmergencyFund: number;
+
 	people: Person[];
 	taxManager: TaxManagerParameters;
 	jobs: JobParameters[];
@@ -43,14 +42,15 @@ export class ModelState {
 	currentDate: Date;
 	inflationRate: number;
 	targetEmergencyFund: number;
-	personByName: Map<string, Person>;
+
+	personById: Map<number, Person>;
 	taxManager: TaxManager;
 	jobs: Job[];
 	expenses: Expense[];
 	houses: House[];
 	savingsAccount: SavingsAccount;
 	brokerageAccount: BrokerageAccount;
-	retirement401kAccountByEmployeeName: Map<string, RetirementAccount401k>;
+	retirement401kAccounts: RetirementAccount401k[];
 	isBankrupt: boolean;
 
 	constructor(params: ModelParameters) {
@@ -58,38 +58,54 @@ export class ModelState {
 		this.inflationRate = params.inflationRate;
 		this.targetEmergencyFund = params.targetEmergencyFund;
 
-		this.personByName = new Map();
+		this.personById = new Map();
 		for (let person of params.people) {
-			this.personByName.set(person.name, person);
+			this.personById.set(person.id, person);
 		}
 
 		this.taxManager = new TaxManager(params.taxManager, params.startYear, params.inflationRate);
 
-		this.jobs = params.jobs.map(
-			(jobParams) => new Job(jobParams, params.startYear, this.taxManager.getMax401kContribution())
-		);
+		this.jobs = [];
+		for (let jobParams of params.jobs) {
+			const employee = this.personById.get(jobParams.employeeId);
+			if (employee === undefined) {
+				throw `Unexpected employee: ${jobParams.employeeId}`;
+			}
+			this.jobs.push(
+				new Job(
+					jobParams,
+					params.startYear,
+					employee,
+					this.taxManager.getMax401kContribution(),
+					this.taxManager.getPenaltyFree401kWithdrawalAge()
+				)
+			);
+		}
 		this.expenses = params.expenses.map((expenseParams) => new Expense(expenseParams));
 		this.houses = params.houses.map((houseParams) => new House(houseParams, params.startYear));
 
 		this.savingsAccount = new SavingsAccount(params.savingsAccount, params.startYear);
 		this.brokerageAccount = new BrokerageAccount(params.brokerageAccount, params.startYear);
 
-		this.retirement401kAccountByEmployeeName = new Map();
+		this.retirement401kAccounts = [];
 		for (let retirement401kParams of params.retirement401kAccounts) {
-			const employee = this.personByName.get(retirement401kParams.employeeName);
+			const employee = this.personById.get(retirement401kParams.employeeId);
 			if (employee === undefined) {
-				throw `Unexpected employee: ${retirement401kParams.employeeName};`;
+				throw `Unexpected employee: ${retirement401kParams.employeeId};`;
 			}
-			this.retirement401kAccountByEmployeeName.set(
-				retirement401kParams.employeeName,
+			this.retirement401kAccounts.push(
 				new RetirementAccount401k(
 					retirement401kParams,
 					params.startYear,
-					employee.birthday,
+					employee,
 					this.taxManager.getPenaltyFree401kWithdrawalAge()
 				)
 			);
 		}
+		this.retirement401kAccounts.push(...this.jobs.map((job) => job.retirementAccount401k));
+		this.retirement401kAccounts.sort((a, b) => {
+			return a.penaltyFreeWithdrawalDate.getTime() - b.penaltyFreeWithdrawalDate.getTime();
+		});
 
 		this.isBankrupt = false;
 	}
@@ -104,15 +120,9 @@ export class ModelState {
 	}
 
 	withdrawCash(amount: number): number {
-		const accounts401kByWithdrawalDate = Array.from(
-			this.retirement401kAccountByEmployeeName.values()
-		);
-		accounts401kByWithdrawalDate.sort((a, b) => {
-			return a.penaltyFreeWithdrawalDate.getTime() - b.penaltyFreeWithdrawalDate.getTime();
-		});
 		const accountsByWithdrawOrder = Array.prototype.concat(
 			[this.savingsAccount, this.brokerageAccount],
-			accounts401kByWithdrawalDate
+			this.retirement401kAccounts
 		);
 
 		let remaining = amount;
@@ -128,11 +138,11 @@ export class ModelState {
 		const doc1099Ints = [this.savingsAccount.getPreviousYear1099Int()];
 		const doc1099Bs = [this.brokerageAccount.getPreviousYear1099B()];
 		const doc1098s = this.houses.map((house) => house.getPreviousYear1098());
-
 		let doc1099Rs: TaxDocument1099R[] = [];
-		for (let account of this.retirement401kAccountByEmployeeName.values()) {
-			doc1099Rs = doc1099Rs.concat(account.getPreviousYear1099Rs());
-		}
+		doc1099Rs = this.retirement401kAccounts.reduce(
+			(previousDocs, account) => previousDocs.concat(account.getPreviousYear1099Rs()),
+			doc1099Rs
+		);
 
 		return this.taxManager.computePreviousYearTax(
 			docW2s,
@@ -147,7 +157,7 @@ export class ModelState {
 		// Appreciation
 		this.savingsAccount.receiveMonthlyInterest();
 		this.brokerageAccount.receiveMonthlyReturn();
-		this.retirement401kAccountByEmployeeName.forEach((account) => {
+		this.retirement401kAccounts.forEach((account) => {
 			account.receiveMonthlyReturn();
 		});
 		this.houses.forEach((house) => house.applyMonthlyAppreciation());
@@ -176,14 +186,6 @@ export class ModelState {
 			balance -= this.computeTaxes();
 		}
 
-		for (let paystub of paystubs) {
-			let account = this.retirement401kAccountByEmployeeName.get(paystub.employeeName);
-			if (account === undefined) {
-				throw `Unexpected employee: ${paystub.employeeName}`;
-			}
-			account.contribute(paystub.contribution401k);
-		}
-
 		if (balance >= 0) {
 			this.depositCash(balance);
 		} else {
@@ -202,7 +204,7 @@ export class ModelState {
 			this.houses.forEach((house) => house.incrementYear(this.inflationRate));
 			this.savingsAccount.incrementYear();
 			this.brokerageAccount.incrementYear();
-			this.retirement401kAccountByEmployeeName.forEach((account) => account.incrementYear());
+			this.retirement401kAccounts.forEach((account) => account.incrementYear());
 		}
 
 		// Increment to next month.
@@ -210,10 +212,10 @@ export class ModelState {
 	}
 
 	getNetWorth() {
-		let totalRetirement = 0;
-		for (let account of this.retirement401kAccountByEmployeeName.values()) {
-			totalRetirement += account.value;
-		}
+		const totalRetirement = this.retirement401kAccounts.reduce(
+			(partialSum, account) => partialSum + account.value,
+			0
+		);
 		const totalHomeEquity = this.houses.reduce(
 			(partialSum, house) => partialSum + house.getHomeEquity(),
 			0
@@ -228,18 +230,26 @@ export class ModelState {
 		return {
 			date: new Date(this.currentDate),
 			netWorth: this.getNetWorth(),
-			homeEquities: this.houses.map((house) => ({
-				name: house.params.name,
-				value: house.getHomeEquity()
-			})),
-			savingsValue: {
-				name: this.savingsAccount.params.name,
-				value: this.savingsAccount.value
-			},
-			brokerageValue: {
-				name: this.brokerageAccount.params.accountName,
-				value: this.brokerageAccount.value
-			}
+			assets: Array.prototype.concat(
+				[
+					{
+						name: this.savingsAccount.params.name,
+						value: this.savingsAccount.value
+					},
+					{
+						name: this.brokerageAccount.params.accountName,
+						value: this.brokerageAccount.value
+					}
+				],
+				this.houses.map((house) => ({
+					name: house.params.name,
+					value: house.getHomeEquity()
+				})),
+				this.retirement401kAccounts.map((account) => ({
+					name: account.params.accountName,
+					value: account.value
+				}))
+			)
 		};
 	}
 }

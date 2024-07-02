@@ -3,24 +3,22 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 
 	import Expense from './Expense.svelte';
-	import type { ExpenseParameters } from '$lib/model/expense';
+	import { type ExpenseParameters, generateExpenseId } from '$lib/model/expense';
 
 	export let expenses: ExpenseParameters[];
-
-	let nextId = expenses.length;
 
 	const defaultExpense: ExpenseParameters = {
 		id: 0,
 		name: '',
-		start: new Date(1990, 0, 1),
-		end: new Date(1990, 0, 2),
+		start: new Date(2025, 0, 1),
+		end: new Date(2035, 0, 2),
 		initialMonthlyExpense: 1000,
 		realIncreaseRate: 0
 	};
 
 	function addExpense() {
-		expenses = [...expenses, { ...defaultExpense, id: nextId, name: `Expense ${nextId}` }];
-		nextId += 1;
+		const expenseId = generateExpenseId();
+		expenses = [...expenses, { ...defaultExpense, id: expenseId, name: `Expense (${expenseId})` }];
 	}
 
 	function removeExpense(expense: ExpenseParameters) {

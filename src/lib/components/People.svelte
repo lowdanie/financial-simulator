@@ -3,17 +3,19 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 
 	import Person from './Person.svelte';
-	import type { Person as PersonType } from '$lib/model/person';
-	// import type {JobParameters} from '$lib/model/job';
+	import { type Person as PersonType, generatePersonId } from '$lib/model/person';
 
 	export let people: PersonType[];
-	// export let jobs: JobParameters[];
 
-	let nextId = people.length;
+	const defaultPerson: PersonType = {
+		id: 0,
+		name: '',
+		birthday: new Date(1990, 0)
+	};
 
 	function addPerson() {
-		people = [...people, { name: `Person (${nextId})`, birthday: new Date(1990, 0, 1), id: nextId }];
-		nextId += 1;
+		const personId = generatePersonId();
+		people = [...people, { ...defaultPerson, id: personId, name: `Person (${personId})` }];
 	}
 
 	function removePerson(person: PersonType) {

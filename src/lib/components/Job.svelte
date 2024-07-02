@@ -5,6 +5,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import NumberInput from './NumberInput.svelte';
+	import { Separator } from '$lib/components/ui/separator/index.js';
 
 	import type { JobParameters } from '$lib/model/job';
 	import type { Person as PersonType } from '$lib/model/person';
@@ -28,19 +29,32 @@
 
 	let editing = false;
 
+	function getEmployeeName(employeeId: number): string {
+		const employee = people.find((x) => x.id == employeeId);
+		if (employee == undefined) {
+			throw `Unexpected employee: ${employeeId}`;
+		}
+		return employee.name;
+	}
+
 	function onEdit() {
 		updatedJobParams = { ...jobParams };
 		updatedDateStrings = {
 			startDate: dateToInputMonthString(jobParams.startDate),
 			endDate: dateToInputMonthString(jobParams.endDate)
 		};
-		selectedPerson = { value: jobParams.employeeName, label: jobParams.employeeName };
+
+		selectedPerson = {
+			value: jobParams.employeeId.toString(),
+			label: getEmployeeName(jobParams.employeeId)
+		};
 
 		editing = true;
 	}
 	function onSave() {
 		updatedJobParams.startDate = inputMonthStringToDate(updatedDateStrings.startDate);
 		updatedJobParams.endDate = inputMonthStringToDate(updatedDateStrings.endDate);
+		updatedJobParams.employeeId = parseInt(selectedPerson.value);
 
 		jobParams = { ...updatedJobParams };
 		dispatch('update', jobParams);
@@ -77,7 +91,7 @@
 							<Select.Group>
 								<Select.Label>People</Select.Label>
 								{#each people as person}
-									<Select.Item value={person.name} label={person.name}>{person.name}</Select.Item>
+									<Select.Item value={person.id} label={person.name}>{person.name}</Select.Item>
 								{/each}
 							</Select.Group>
 						</Select.Content>
@@ -121,6 +135,16 @@
 					/>
 				</div>
 				<div class="flex items-center gap-2">
+					<Label for="job-real-raise-rate{jobParams.id}">Real Raise Rate</Label>
+					<NumberInput
+						bind:value={updatedJobParams.realRaiseRate}
+						id="job-real-raise-rate{jobParams.id}"
+					/>
+				</div>
+
+				<Separator />
+
+				<div class="flex items-center gap-2">
 					<Label for="job-percent-401k-{jobParams.id}">Percent of Max 401k</Label>
 					<NumberInput
 						bind:value={updatedJobParams.percentOfMax401kContribution}
@@ -128,19 +152,27 @@
 					/>
 				</div>
 				<div class="flex items-center gap-2">
-					<Label for="job-401k-match-rate{jobParams.id}">401k Match Rate</Label>
+					<Label for="job-401k-match-rate-jobParams.id}">401k Match Rate</Label>
 					<NumberInput
 						bind:value={updatedJobParams.company401kMatchRate}
-						id="job-401k-match-rate{jobParams.id}"
+						id="job-401k-match-rate-{jobParams.id}"
 					/>
 				</div>
 				<div class="flex items-center gap-2">
-					<Label for="job-real-raise-rate{jobParams.id}">Real Raise Rate</Label>
+					<Label for="job-401k-initial-value-{jobParams.id}">Initial 401k Value</Label>
 					<NumberInput
-						bind:value={updatedJobParams.realRaiseRate}
-						id="job-real-raise-rate{jobParams.id}"
+						bind:value={updatedJobParams.initial401kValue}
+						id="job-401k-initial-value-{jobParams.id}"
 					/>
 				</div>
+				<div class="flex items-center gap-2">
+					<Label for="job-401k-return-rate-{jobParams.id}">Annual 401k Return Rate</Label>
+					<NumberInput
+						bind:value={updatedJobParams.annual401kReturnRate}
+						id="job-401k-return-rate-{jobParams.id}"
+					/>
+				</div>
+
 				<div class="flex justify-between">
 					<Button type="submit">Save</Button>
 					<Button variant="outline" on:click={onCancel}>Cancel</Button>
@@ -154,7 +186,7 @@
 				</div>
 				<div class="flex gap-2">
 					<div class="text-sm font-medium">Employee</div>
-					<div class="text-sm">{jobParams.employeeName}</div>
+					<div class="text-sm">{getEmployeeName(jobParams.employeeId)}</div>
 				</div>
 				<div class="flex gap-2">
 					<div class="text-sm font-medium">Start Date</div>
@@ -177,6 +209,11 @@
 					<div class="text-sm">{jobParams.bonusMonth}</div>
 				</div>
 				<div class="flex gap-2">
+					<div class="text-sm font-medium">Real Raise Rate</div>
+					<div class="text-sm">{jobParams.realRaiseRate}</div>
+				</div>
+				<Separator />
+				<div class="flex gap-2">
 					<div class="text-sm font-medium">Percent of Max 401k</div>
 					<div class="text-sm">{jobParams.percentOfMax401kContribution}</div>
 				</div>
@@ -185,8 +222,12 @@
 					<div class="text-sm">{jobParams.company401kMatchRate}</div>
 				</div>
 				<div class="flex gap-2">
-					<div class="text-sm font-medium">Real Raise Rate</div>
-					<div class="text-sm">{jobParams.realRaiseRate}</div>
+					<div class="text-sm font-medium">Initial 401k Value</div>
+					<div class="text-sm">{jobParams.initial401kValue}</div>
+				</div>
+				<div class="flex gap-2">
+					<div class="text-sm font-medium">Annual 401k Return Rate</div>
+					<div class="text-sm">{jobParams.annual401kReturnRate}</div>
 				</div>
 				<div class="flex justify-between">
 					<Button variant="secondary" on:click={onEdit}>Edit</Button>
