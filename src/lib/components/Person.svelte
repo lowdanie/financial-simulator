@@ -5,18 +5,24 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 
 	import type { Person } from '$lib/model/person';
-	import { dateToString } from '$lib/model/date_utils';
+	import { dateToInputDateString, inputDateStringToDate } from '$lib/model/date_utils';
 	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
 	export let person: Person;
 
 	let updatedPerson: Person = { ...person };
-	let updatedDateString = dateToString(updatedPerson.birthday);
+	let updatedDateString = dateToInputDateString(updatedPerson.birthday);
 	let editing = false;
 
+	function onEdit() {
+		updatedPerson = { ...person };
+		updatedDateString = dateToInputDateString(updatedPerson.birthday);
+		console.log(`Person date string: ${updatedDateString}`);
+		editing = true;
+	}
 	function onSave() {
-		updatedPerson.birthday = new Date(updatedDateString);
+		updatedPerson.birthday = inputDateStringToDate(updatedDateString);
 		person = { ...updatedPerson };
 		dispatch('update', person);
 		editing = false;
@@ -39,7 +45,7 @@
 					<Input bind:value={updatedPerson.name} type="text" id="person-name-{person.id}" />
 				</div>
 				<div class="flex items-center gap-2">
-					<Label for="person-birthday-{person.id}">Age</Label>
+					<Label for="person-birthday-{person.id}">Birthday</Label>
 					<Input bind:value={updatedDateString} type="date" id="person-birthday-{person.id}" />
 				</div>
 				<div class="flex justify-between">
@@ -55,10 +61,10 @@
 				</div>
 				<div class="flex gap-2">
 					<span class="text-sm font-medium">Age</span>
-					<span class="text-sm">{dateToString(person.birthday)}</span>
+					<span class="text-sm">{dateToInputDateString(person.birthday)}</span>
 				</div>
 				<div class="flex justify-between">
-					<Button variant="secondary" on:click={() => (editing = true)}>Edit</Button>
+					<Button variant="secondary" on:click={onEdit}>Edit</Button>
 					<Button variant="destructive" on:click={() => dispatch('remove', person)}>Delete</Button>
 				</div>
 			</div>

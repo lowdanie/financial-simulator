@@ -1,5 +1,6 @@
 import { Job, type JobParameters } from './job';
 import { Expense, type ExpenseParameters } from './expense';
+import { House, type HouseParameters } from './house';
 import { type Person } from './person';
 import {
 	RetirementAccount401k,
@@ -10,6 +11,19 @@ import { TaxManager, type TaxManagerParameters } from './tax_manager';
 import type { TaxDocument1099R } from './tax_document';
 import { BrokerageAccount, type BrokerageAccountParameters } from './brokerage_account';
 
+export interface MonthAssetSummary {
+	name: string;
+	value: number;
+}
+
+export interface MonthSummary {
+	date: Date;
+	netWorth: number;
+	homeEquities: MonthAssetSummary[];
+	savingsValue: MonthAssetSummary;
+	brokerageValue: MonthAssetSummary;
+}
+
 export interface ModelParameters {
 	startYear: number;
 	durationYears: number;
@@ -19,6 +33,7 @@ export interface ModelParameters {
 	taxManager: TaxManagerParameters;
 	jobs: JobParameters[];
 	expenses: ExpenseParameters[];
+	houses: HouseParameters[];
 	savingsAccount: SavingsAccountParameters;
 	brokerageAccount: BrokerageAccountParameters;
 	retirement401kAccounts: RetirementAccount401kParameters[];
@@ -32,6 +47,7 @@ export class ModelState {
 	taxManager: TaxManager;
 	jobs: Job[];
 	expenses: Expense[];
+	houses: House[];
 	savingsAccount: SavingsAccount;
 	brokerageAccount: BrokerageAccount;
 	retirement401kAccountByEmployeeName: Map<string, RetirementAccount401k>;
@@ -49,17 +65,11 @@ export class ModelState {
 
 		this.taxManager = new TaxManager(params.taxManager, params.startYear, params.inflationRate);
 
-		this.jobs = [];
-		for (let jobParams of params.jobs) {
-			this.jobs.push(
-				new Job(jobParams, params.startYear, this.taxManager.getMax401kContribution())
-			);
-		}
-
-		this.expenses = [];
-		for (let expenseParams of params.expenses) {
-			this.expenses.push(new Expense(expenseParams));
-		}
+		this.jobs = params.jobs.map(
+			(jobParams) => new Job(jobParams, params.startYear, this.taxManager.getMax401kContribution())
+		);
+		this.expenses = params.expenses.map((expenseParams) => new Expense(expenseParams));
+		this.houses = params.houses.map((houseParams) => new House(houseParams, params.startYear));
 
 		this.savingsAccount = new SavingsAccount(params.savingsAccount, params.startYear);
 		this.brokerageAccount = new BrokerageAccount(params.brokerageAccount, params.startYear);
@@ -117,40 +127,54 @@ export class ModelState {
 		const docW2s = this.jobs.map((job) => job.getPreviousYearW2());
 		const doc1099Ints = [this.savingsAccount.getPreviousYear1099Int()];
 		const doc1099Bs = [this.brokerageAccount.getPreviousYear1099B()];
+		const doc1098s = this.houses.map((house) => house.getPreviousYear1098());
+
 		let doc1099Rs: TaxDocument1099R[] = [];
 		for (let account of this.retirement401kAccountByEmployeeName.values()) {
 			doc1099Rs = doc1099Rs.concat(account.getPreviousYear1099Rs());
 		}
 
-		return this.taxManager.computePreviousYearFederalTax(docW2s, doc1099Ints, doc1099Bs, doc1099Rs);
+		return this.taxManager.computePreviousYearTax(
+			docW2s,
+			doc1099Ints,
+			doc1099Bs,
+			doc1099Rs,
+			doc1098s
+		);
 	}
 
 	executeMonth() {
-		// Credit
+		// Appreciation
 		this.savingsAccount.receiveMonthlyInterest();
 		this.brokerageAccount.receiveMonthlyReturn();
 		this.retirement401kAccountByEmployeeName.forEach((account) => {
 			account.receiveMonthlyReturn();
 		});
+		this.houses.forEach((house) => house.applyMonthlyAppreciation());
+
+		// Cashflow
 		const paystubs = this.jobs
 			.filter((job) => job.isActive(this.currentDate))
 			.map((job) => {
 				return job.sendMonthlyPaystub(this.currentDate.getMonth() + 1);
 			});
 
-		// Debit
-		let monthlyExpense = this.expenses
+		let balance = paystubs.reduce((partialSum, paystub) => partialSum + paystub.income, 0);
+		balance -= this.expenses
 			.filter((expense) => expense.isActive(this.currentDate))
 			.reduce((partialSum, expense) => {
 				return partialSum + expense.monthlyExpense;
 			}, 0);
 
-		if (this.currentDate.getMonth() == 3) {
-			monthlyExpense += this.computeTaxes();
-		}
+		balance += this.houses.reduce(
+			(partialSum, house) =>
+				partialSum + house.executeMonthlyCashflow(this.currentDate.getMonth() + 1),
+			0
+		);
 
-		// Cashflow
-		let monthlyIncome = paystubs.reduce((partialSum, paystub) => partialSum + paystub.income, 0);
+		if (this.currentDate.getMonth() == 3) {
+			balance -= this.computeTaxes();
+		}
 
 		for (let paystub of paystubs) {
 			let account = this.retirement401kAccountByEmployeeName.get(paystub.employeeName);
@@ -159,8 +183,6 @@ export class ModelState {
 			}
 			account.contribute(paystub.contribution401k);
 		}
-
-		let balance = monthlyIncome - monthlyExpense;
 
 		if (balance >= 0) {
 			this.depositCash(balance);
@@ -177,6 +199,7 @@ export class ModelState {
 				job.incrementYear(this.inflationRate, this.taxManager.getMax401kContribution())
 			);
 			this.expenses.forEach((expense) => expense.incrementYear(this.inflationRate));
+			this.houses.forEach((house) => house.incrementYear(this.inflationRate));
 			this.savingsAccount.incrementYear();
 			this.brokerageAccount.incrementYear();
 			this.retirement401kAccountByEmployeeName.forEach((account) => account.incrementYear());
@@ -191,6 +214,32 @@ export class ModelState {
 		for (let account of this.retirement401kAccountByEmployeeName.values()) {
 			totalRetirement += account.value;
 		}
-		return this.savingsAccount.value + this.brokerageAccount.value + totalRetirement;
+		const totalHomeEquity = this.houses.reduce(
+			(partialSum, house) => partialSum + house.getHomeEquity(),
+			0
+		);
+
+		return (
+			this.savingsAccount.value + this.brokerageAccount.value + totalRetirement + totalHomeEquity
+		);
+	}
+
+	getMonthSummary(): MonthSummary {
+		return {
+			date: new Date(this.currentDate),
+			netWorth: this.getNetWorth(),
+			homeEquities: this.houses.map((house) => ({
+				name: house.params.name,
+				value: house.getHomeEquity()
+			})),
+			savingsValue: {
+				name: this.savingsAccount.params.name,
+				value: this.savingsAccount.value
+			},
+			brokerageValue: {
+				name: this.brokerageAccount.params.accountName,
+				value: this.brokerageAccount.value
+			}
+		};
 	}
 }

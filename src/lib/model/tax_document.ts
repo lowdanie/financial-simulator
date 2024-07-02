@@ -28,4 +28,5 @@ export interface TaxDocument1099B {
 export interface TaxDocument1098 {
 	year: number;
 	mortgageInterestPayed: number;
+	propertyTax: number;
 }

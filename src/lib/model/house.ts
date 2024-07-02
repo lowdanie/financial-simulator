@@ -77,6 +77,9 @@ export class House {
 		this.monthlyCommonFee = params.monthlyCommonFee;
 		this.monthlyMortgageRate = params.mortgageRate / 12;
 
+		this.currentTaxInfo = { interestPayment: 0, assessedHomeValue: params.homeValue };
+		this.previousTaxInfo = { interestPayment: 0, assessedHomeValue: 0 };
+
 		if (params.buyDate < new Date(year, 0)) {
 			if (params.remainingPrincipal === undefined) {
 				throw 'The remaining principal must be set for homes that were already bought.';
@@ -97,15 +100,10 @@ export class House {
 			this.remainingPrincipal = 0;
 			this.monthlyMortgagePayment = 0;
 		}
-
-		this.currentTaxInfo = { interestPayment: 0, assessedHomeValue: params.homeValue };
-		this.previousTaxInfo = { interestPayment: 0, assessedHomeValue: 0 };
 	}
 
 	buyHome(): number {
 		this.boughtHome = true;
-		this.remainingPrincipal = this.homeValue;
-
 		this.monthlyMortgagePayment = computeMonthlyMortgagePayment(
 			this.homeValue,
 			this.params.mortgageRate,
@@ -113,8 +111,12 @@ export class House {
 			this.params.downPaymentRate
 		);
 
-		const buyFactor = (this.params.downPaymentRate + this.params.closingCostRate) / 100;
-		return buyFactor * this.homeValue;
+		const downPayment = (this.params.downPaymentRate / 100) * this.homeValue;
+		const closingCost = (this.params.closingCostRate / 100) * this.homeValue;
+
+		this.remainingPrincipal = this.homeValue - downPayment;
+
+		return -(downPayment + closingCost);
 	}
 
 	sellHome(): number {
@@ -143,6 +145,17 @@ export class House {
 		);
 	}
 
+	getPreviousYearPropertyTax(): number {
+		const taxRate =
+			(this.params.propertyTaxRate *
+				numOverlapMonths(
+					{ start: this.params.buyDate, end: this.params.sellDate },
+					this.currentYear - 1
+				)) /
+			12;
+		return (taxRate / 100) * this.previousTaxInfo.assessedHomeValue;
+	}
+
 	applyMonthlyAppreciation() {
 		if (this.boughtHome && !this.soldHome) {
 			this.homeValue *= 1 + this.homeValueMonthlyGrowthRate / 100;
@@ -153,12 +166,12 @@ export class House {
 		const currentDate = new Date(this.currentYear, month - 1);
 		let balance = 0;
 
-		if (currentDate == this.params.buyDate) {
+		if (currentDate.getTime() == this.params.buyDate.getTime()) {
 			balance = this.buyHome();
 			balance -= this.makeMonthlyPayments();
 		} else if (this.params.buyDate < currentDate && currentDate < this.params.sellDate) {
 			balance -= this.makeMonthlyPayments();
-		} else if (currentDate == this.params.sellDate) {
+		} else if (currentDate.getTime() == this.params.sellDate.getTime()) {
 			balance = this.sellHome();
 		}
 
@@ -182,19 +195,9 @@ export class House {
 	getPreviousYear1098(): TaxDocument1098 {
 		return {
 			year: this.currentYear - 1,
-			mortgageInterestPayed: this.previousTaxInfo.interestPayment
+			mortgageInterestPayed: this.previousTaxInfo.interestPayment,
+			propertyTax: this.getPreviousYearPropertyTax()
 		};
-	}
-
-	getPreviousYearPropertyTax(): number {
-		const taxRate =
-			(this.params.propertyTaxRate *
-				numOverlapMonths(
-					{ start: this.params.buyDate, end: this.params.sellDate },
-					this.currentYear - 1
-				)) /
-			12;
-		return (taxRate / 100) * this.previousTaxInfo.assessedHomeValue;
 	}
 
 	getHomeEquity(): number {

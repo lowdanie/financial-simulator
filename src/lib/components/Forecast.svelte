@@ -1,55 +1,105 @@
 <script lang="ts">
-	import Chart from 'chart.js/auto';
+	import Chart, { type ChartDataset, type Point } from 'chart.js/auto';
 
 	import { Separator } from '$lib/components/ui/separator/index.js';
 
-	import type { ModelParameters } from '$lib/model/model';
-	import { type Forecast, type DateValue, simulate } from '$lib/model/simulator';
+	import type { ModelParameters, MonthSummary } from '$lib/model/model';
+	import { type Forecast, simulate } from '$lib/model/simulator';
 
 	export let modelParams: ModelParameters;
 	$: forecast = simulate(modelParams);
 
-	function getFinalNetWorth(modelParams: ModelParameters): number {
-		let forecast = simulate(modelParams);
-		return forecast.netWorth[forecast.netWorth.length - 1].value;
+	type Dataset = ChartDataset<'line', number[]>;
+
+	const PRIMARY_LINE_COLOR = '#0f182a';
+	const SECONDARY_LINE_COLORS = ['#3ec2fa', '#00d0ea', '#00d8bd', '#58da7e', '#b0d33d', '#ffc014'];
+
+	function getLabel(monthSummary: MonthSummary): string {
+		return `${monthSummary.date.getMonth() + 1}/${monthSummary.date.getFullYear()}`;
 	}
 
-	function getLabel(dateValue: DateValue): string {
-		return `${dateValue.date.getMonth() + 1}/${dateValue.date.getFullYear()}`;
+	function buildLabels(forecast: Forecast): string[] {
+		return forecast.monthSummaries.map(getLabel);
+	}
+
+	function buildDatasets(forecast: Forecast): Dataset[] {
+		if (forecast.monthSummaries.length == 0) {
+			return [];
+		}
+		let colorIdx = 0;
+
+		let netWorthDataset: Dataset = {
+			label: 'Net Worth',
+			data: [],
+			borderColor: PRIMARY_LINE_COLOR,
+			backgroundColor: PRIMARY_LINE_COLOR
+		};
+		let savingsDataset: Dataset = {
+			label: forecast.monthSummaries[0].savingsValue.name,
+			data: [],
+			borderWidth: 1,
+			borderColor: SECONDARY_LINE_COLORS[colorIdx],
+			backgroundColor: SECONDARY_LINE_COLORS[colorIdx]
+		};
+		colorIdx = (colorIdx + 1) % SECONDARY_LINE_COLORS.length;
+
+		let brokerageDataset: Dataset = {
+			label: forecast.monthSummaries[0].brokerageValue.name,
+			data: [],
+			borderWidth: 1,
+			borderColor: SECONDARY_LINE_COLORS[colorIdx],
+			backgroundColor: SECONDARY_LINE_COLORS[colorIdx]
+		};
+		colorIdx = (colorIdx + 1) % SECONDARY_LINE_COLORS.length;
+
+		let homeDatasets: Dataset[] = [];
+		for (let asset of forecast.monthSummaries[0].homeEquities) {
+			homeDatasets.push({
+				label: `${asset.name} Equity`,
+				data: [],
+				borderWidth: 1,
+				borderColor: SECONDARY_LINE_COLORS[colorIdx],
+				backgroundColor: SECONDARY_LINE_COLORS[colorIdx]
+			});
+			colorIdx = (colorIdx + 1) % SECONDARY_LINE_COLORS.length;
+		}
+
+		for (let monthSummary of forecast.monthSummaries) {
+			netWorthDataset.data.push(monthSummary.netWorth);
+			savingsDataset.data.push(monthSummary.savingsValue.value);
+			brokerageDataset.data.push(monthSummary.brokerageValue.value);
+			for (let i = 0; i < monthSummary.homeEquities.length; i++) {
+				homeDatasets[i].data.push(monthSummary.homeEquities[i].value);
+			}
+		}
+
+		return [netWorthDataset, savingsDataset, brokerageDataset].concat(homeDatasets);
 	}
 
 	function makeChart(ctx: HTMLCanvasElement, forecast: Forecast) {
 		const chart = new Chart(ctx, {
 			type: 'line',
 			data: {
-				labels: forecast.netWorth.map(getLabel),
-				datasets: [
-					{
-						label: 'Net Worth',
-						data: forecast.netWorth.map((x) => x.value)
-					}
-				]
+				labels: buildLabels(forecast),
+				datasets: buildDatasets(forecast)
 			},
 			options: {
 				elements: {
 					point: {
 						pointStyle: false
-					},
-					line: {
-						borderColor: '#0f182a'
 					}
 				},
 				plugins: {
 					legend: {
-						display: false
+						display: true
 					}
 				}
 			}
 		});
 		return {
 			update(forecast: Forecast) {
-				chart.data.labels = forecast.netWorth.map(getLabel);
-				chart.data.datasets[0].data = forecast.netWorth.map((x) => x.value);
+				chart.data.labels = buildLabels(forecast);
+				chart.data.datasets = buildDatasets(forecast);
 				chart.update();
 			},
 			destroy() {
@@ -58,11 +108,6 @@
 		};
 	}
 </script>
-
-<!-- <div class="flex gap-2">
-	<div>Final Net Worth</div>
-	<div>{getFinalNetWorth(modelParams)}</div>
-</div> -->
 
 <div class="flex-grow">
 	<div class="flex flex-col">

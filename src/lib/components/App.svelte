@@ -16,6 +16,7 @@
 		people: [],
 		jobs: [],
 		expenses: [],
+		houses: [],
 		retirement401kAccounts: [],
 		savingsAccount: {
 			name: 'Savings Account',

@@ -7,6 +7,7 @@
 	import RetirementAccounts401k from './RetirementAccounts401k.svelte';
 	import SavingsAccount from './SavingsAccount.svelte';
 	import GeneralParameters from './GeneralParameters.svelte';
+	import Houses from './Houses.svelte';
 
 	import type { ModelParameters } from '$lib/model/model';
 	import Brokerage from './Brokerage.svelte';
@@ -18,6 +19,7 @@
 		'People',
 		'Jobs',
 		'Expenses',
+		'Houses',
 		'Savings Account',
 		'Brokerage Account',
 		'401k Accounts'
@@ -60,6 +62,9 @@
 		</div>
 		<div class={getDisplayType(activeParamName == 'Expenses')}>
 			<Expenses bind:expenses={params.expenses} />
+		</div>
+		<div class={getDisplayType(activeParamName == 'Houses')}>
+			<Houses bind:houses={params.houses} modelStartYear={params.startYear} />
 		</div>
 		<div class={getDisplayType(activeParamName == 'Savings Account')}>
 			<SavingsAccount bind:account={params.savingsAccount} />

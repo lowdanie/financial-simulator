@@ -8,7 +8,7 @@
 
 	import type { JobParameters } from '$lib/model/job';
 	import type { Person as PersonType } from '$lib/model/person';
-	import { dateToString } from '$lib/model/date_utils';
+	import { dateToInputMonthString, inputMonthStringToDate } from '$lib/model/date_utils';
 	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
@@ -31,16 +31,16 @@
 	function onEdit() {
 		updatedJobParams = { ...jobParams };
 		updatedDateStrings = {
-			startDate: dateToString(jobParams.startDate),
-			endDate: dateToString(jobParams.endDate)
+			startDate: dateToInputMonthString(jobParams.startDate),
+			endDate: dateToInputMonthString(jobParams.endDate)
 		};
 		selectedPerson = { value: jobParams.employeeName, label: jobParams.employeeName };
 
 		editing = true;
 	}
 	function onSave() {
-		updatedJobParams.startDate = new Date(updatedDateStrings.startDate);
-		updatedJobParams.endDate = new Date(updatedDateStrings.endDate);
+		updatedJobParams.startDate = inputMonthStringToDate(updatedDateStrings.startDate);
+		updatedJobParams.endDate = inputMonthStringToDate(updatedDateStrings.endDate);
 
 		jobParams = { ...updatedJobParams };
 		dispatch('update', jobParams);
@@ -87,7 +87,7 @@
 					<Label for="job-start-date-{jobParams.id}">Start Date</Label>
 					<Input
 						bind:value={updatedDateStrings.startDate}
-						type="date"
+						type="month"
 						id="job-start-date-{jobParams.id}"
 					/>
 				</div>
@@ -95,7 +95,7 @@
 					<Label for="job-end-date-{jobParams.id}">End Date</Label>
 					<Input
 						bind:value={updatedDateStrings.endDate}
-						type="date"
+						type="month"
 						id="job-end-date-{jobParams.id}"
 					/>
 				</div>
@@ -158,11 +158,11 @@
 				</div>
 				<div class="flex gap-2">
 					<div class="text-sm font-medium">Start Date</div>
-					<div class="text-sm">{dateToString(jobParams.startDate)}</div>
+					<div class="text-sm">{dateToInputMonthString(jobParams.startDate)}</div>
 				</div>
 				<div class="flex gap-2">
 					<div class="text-sm font-medium">End Date</div>
-					<div class="text-sm">{dateToString(jobParams.endDate)}</div>
+					<div class="text-sm">{dateToInputMonthString(jobParams.endDate)}</div>
 				</div>
 				<div class="flex gap-2">
 					<div class="text-sm font-medium">Initial Salary</div>

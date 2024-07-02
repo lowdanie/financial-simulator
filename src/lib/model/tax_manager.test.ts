@@ -23,7 +23,7 @@ describe('test TaxManager', () => {
 	});
 	test('computePreviousYearFederalTax', () => {
 		let taxManager = new TaxManager(PARAMS, 2024, INFLATION_RATE);
-		const tax = taxManager.computePreviousYearFederalTax(
+		const tax = taxManager.computePreviousYearTax(
 			[
 				{
 					year: 2023,
@@ -41,13 +41,17 @@ describe('test TaxManager', () => {
 					taxableIncome: 10000,
 					isEarlyDistribution: true
 				}
-			]
+			],
+			[{ year: 2023, mortgageInterestPayed: 100, propertyTax: 1000 }]
 		);
 		const totalIncome = 100000 + 50000 + 10000 - 29200;
 		const expectedIncomeTax = 0.1 * 22000 + 0.12 * (89450 - 22000) + 0.22 * (totalIncome - 89450);
 		const expectedCapitalGainsTax = 0.15 * 100;
 		const expected401kPenalty = 0.1 * 10000;
+		const expectedPropertyTax = 1000;
 
-		expect(tax).toBeCloseTo(expectedIncomeTax + expectedCapitalGainsTax + expected401kPenalty);
+		expect(tax).toBeCloseTo(
+			expectedIncomeTax + expectedCapitalGainsTax + expected401kPenalty + expectedPropertyTax
+		);
 	});
 });

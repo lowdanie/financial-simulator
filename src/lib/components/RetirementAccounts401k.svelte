@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
-    import { Separator } from '$lib/components/ui/separator/index.js';
+	import { Separator } from '$lib/components/ui/separator/index.js';
 
 	import RetirementAccount401k from './RetirementAccount401k.svelte';
 	import type { RetirementAccount401kParameters } from '$lib/model/retirement_account_401k';

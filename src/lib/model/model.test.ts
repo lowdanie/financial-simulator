@@ -4,6 +4,7 @@ import { FilingStatus } from './tax_manager';
 const SAVINGS_MONTHLY_RETURN = 2;
 const RETIREMENT_MONTHLY_RETURN = 3;
 const BROKERAGE_MONTHLY_RETURN = 4;
+const MONTHLY_HOUSE_VALUE_GROWTH_RATE = 3;
 
 const MODEL_PARAMS: ModelParameters = {
 	startYear: 2025,
@@ -43,6 +44,31 @@ const MODEL_PARAMS: ModelParameters = {
 			end: new Date(2035, 0, 1),
 			initialMonthlyExpense: 1000,
 			realIncreaseRate: 2
+		}
+	],
+	houses: [
+		{
+			id: 0,
+			name: 'house',
+			buyDate: new Date(2020, 5),
+			sellDate: new Date(2025, 5),
+			homeValue: 100000,
+			homeValueAnnualGrowthRate:
+				100 * (Math.pow(1 + MONTHLY_HOUSE_VALUE_GROWTH_RATE / 100, 12) - 1),
+
+			mortgageRate: 5,
+			mortgageLengthYears: 30,
+			downPaymentRate: 20,
+			homeBuyPrice: 50000,
+			remainingPrincipal: 40000,
+
+			monthlyCommonFee: 100,
+			propertyTaxRate: 1,
+			insuranceRate: 1,
+			maintenanceRate: 2,
+
+			closingCostRate: 5,
+			sellingCostRate: 3
 		}
 	],
 	savingsAccount: {
@@ -96,7 +122,11 @@ describe('test Model', () => {
 		const expectedMonthly401kContribution = (1.03 * 1.03 * 22500) / 12;
 		const expectedMonthlySalary = 100000 / 12 - expectedMonthly401kContribution;
 		const expectedMonthlyExpense = 1000;
-		const expectedBalance = expectedMonthlySalary - expectedMonthlyExpense;
+		const expectedMonthlyMortgagePayment = 214.73;
+		const expectedHouseValue = (1 + MONTHLY_HOUSE_VALUE_GROWTH_RATE / 100) * 100000;
+		const expectedHousePayments =
+			expectedMonthlyMortgagePayment + 100 + ((0.01 + 0.02) * expectedHouseValue) / 12;
+		const expectedBalance = expectedMonthlySalary - expectedMonthlyExpense - expectedHousePayments;
 
 		const expectedSavingsValue = (1 + SAVINGS_MONTHLY_RETURN / 100) * 50000;
 		const expectedBrokerageValue = (1 + BROKERAGE_MONTHLY_RETURN / 100) * 200 + expectedBalance;

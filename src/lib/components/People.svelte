@@ -12,7 +12,7 @@
 	let nextId = people.length;
 
 	function addPerson() {
-		people = [...people, { name: 'Unknown', birthday: new Date(1990, 0, 1), id: nextId }];
+		people = [...people, { name: `Person (${nextId})`, birthday: new Date(1990, 0, 1), id: nextId }];
 		nextId += 1;
 	}
 

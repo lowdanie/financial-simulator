@@ -6,24 +6,24 @@
 	import NumberInput from './NumberInput.svelte';
 
 	import type { ExpenseParameters } from '$lib/model/expense';
-	import { dateToString } from '$lib/model/date_utils';
+	import { dateToInputMonthString, inputMonthStringToDate } from '$lib/model/date_utils';
 	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
 	export let expense: ExpenseParameters;
 
 	let updatedExpense: ExpenseParameters = { ...expense };
-	let updatedDateStrings = { start: dateToString(expense.start), end: dateToString(expense.end) };
+	let updatedDateStrings = { start: dateToInputMonthString(expense.start), end: dateToInputMonthString(expense.end) };
 	let editing = false;
 
 	function onSave() {
 		expense = {
 			...updatedExpense,
-			start: new Date(updatedDateStrings.start),
-			end: new Date(updatedDateStrings.end)
+			start: inputMonthStringToDate(updatedDateStrings.start),
+			end: inputMonthStringToDate(updatedDateStrings.end)
 		};
-        console.log("new expense:")
-        console.log(JSON.stringify(expense));
+		console.log('new expense:');
+		console.log(JSON.stringify(expense));
 		dispatch('update', expense);
 		editing = false;
 	}
@@ -48,13 +48,13 @@
 					<Label for="expense-start-{expense.id}">Start</Label>
 					<Input
 						bind:value={updatedDateStrings.start}
-						type="date"
+						type="month"
 						id="expense-start-{expense.id}"
 					/>
 				</div>
 				<div class="flex items-center gap-2">
 					<Label for="expense-end-{expense.id}">End</Label>
-					<Input bind:value={updatedDateStrings.end} type="date" id="expense-end-{expense.id}" />
+					<Input bind:value={updatedDateStrings.end} type="month" id="expense-end-{expense.id}" />
 				</div>
 				<div class="flex items-center gap-2">
 					<Label for="expense-initial-{expense.id}">Monthly Expense</Label>
@@ -83,11 +83,11 @@
 				</div>
 				<div class="flex gap-2">
 					<span class="text-sm font-medium">Start</span>
-					<span class="text-sm">{dateToString(expense.start)}</span>
+					<span class="text-sm">{dateToInputMonthString(expense.start)}</span>
 				</div>
 				<div class="flex gap-2">
 					<span class="text-sm font-medium">End</span>
-					<span class="text-sm">{dateToString(expense.end)}</span>
+					<span class="text-sm">{dateToInputMonthString(expense.end)}</span>
 				</div>
 				<div class="flex gap-2">
 					<span class="text-sm font-medium">Monthly Expense</span>
