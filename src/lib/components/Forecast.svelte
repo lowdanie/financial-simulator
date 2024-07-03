@@ -23,6 +23,8 @@
 	}
 
 	function buildDatasets(forecast: Forecast): Dataset[] {
+		console.log('building datasets...');
+
 		if (forecast.monthSummaries.length == 0) {
 			return [];
 		}
@@ -36,6 +38,7 @@
 
 		let assetDatasets: Dataset[] = [];
 		for (let asset of forecast.monthSummaries[0].assets) {
+			console.log('adding asset', asset.name);
 			assetDatasets.push({
 				label: asset.name,
 				data: [],
@@ -52,7 +55,11 @@
 			}
 		}
 
-		return [netWorthDataset].concat(assetDatasets);
+		const datasets = [netWorthDataset].concat(assetDatasets);
+		for (let d of datasets) {
+			console.log(d.label);
+		}
+		return datasets;
 	}
 
 	function makeChart(ctx: HTMLCanvasElement, forecast: Forecast) {
@@ -72,8 +79,43 @@
 					legend: {
 						display: true
 					}
+				},
+				interaction: {
+					mode: 'index',
+					intersect: false
 				}
-			}
+			},
+			plugins: [
+				{
+					id: 'verticalLine',
+					afterInit: (chart, args, opts) => {
+						chart.verticalLine = {};
+					},
+					afterEvent: (chart, args, options) => {
+						const { inChartArea } = args;
+						chart.verticalLine = { draw: inChartArea };
+					},
+					afterDraw: (chart) => {
+						const { draw } = chart.verticalLine;
+						if (!draw) {
+							return;
+						}
+						if (chart.tooltip?.caretX) {
+							let x = chart.tooltip.caretX;
+							let yAxis = chart.scales.y;
+							let ctx = chart.ctx;
+							ctx.save();
+							ctx.beginPath();
+							ctx.moveTo(x, yAxis.top);
+							ctx.lineTo(x, yAxis.bottom);
+							ctx.lineWidth = 1;
+							ctx.strokeStyle = 'rgba(0, 0, 255, 0.4)';
+							ctx.stroke();
+							ctx.restore();
+						}
+					}
+				}
+			]
 		});
 		return {
 			update(forecast: Forecast) {
