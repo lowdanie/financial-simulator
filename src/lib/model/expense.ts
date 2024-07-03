@@ -1,13 +1,13 @@
 let expenseId = 0;
-export function generateExpenseId() {
+export function generateExpenseId(): number {
 	return expenseId++;
 }
 
 export interface ExpenseParameters {
 	id: number;
 	name: string;
-	start: Date;
-	end: Date;
+	startDate: Date;
+	endDate: Date;
 	initialMonthlyExpense: number;
 	realIncreaseRate: number;
 }
@@ -22,7 +22,7 @@ export class Expense {
 	}
 
 	isActive(date: Date): boolean {
-		return this.params.start <= date && date <= this.params.end;
+		return this.params.startDate <= date && date <= this.params.endDate;
 	}
 
 	incrementYear(inflationRate: number) {

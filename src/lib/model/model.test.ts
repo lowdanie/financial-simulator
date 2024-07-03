@@ -19,7 +19,8 @@ const MODEL_PARAMS: ModelParameters = {
 		}
 	],
 	taxManager: {
-		filingStatus: FilingStatus.JOINT
+		filingStatus: FilingStatus.JOINT,
+		effectiveStateTaxRate: 5
 	},
 	jobs: [
 		{
@@ -42,8 +43,8 @@ const MODEL_PARAMS: ModelParameters = {
 		{
 			id: 0,
 			name: 'rent',
-			start: new Date(2025, 0, 1),
-			end: new Date(2035, 0, 1),
+			startDate: new Date(2025, 0, 1),
+			endDate: new Date(2035, 0, 1),
 			initialMonthlyExpense: 1000,
 			realIncreaseRate: 2
 		}

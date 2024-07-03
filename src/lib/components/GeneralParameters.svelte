@@ -19,6 +19,7 @@
 		durationYears: number;
 		inflationRate: number;
 		targetEmergencyFund: number;
+		taxParams: TaxManagerParameters;
 	};
 
 	interface FilingStatusSelection {
@@ -40,7 +41,8 @@
 			startYear: startYear,
 			durationYears: durationYears,
 			inflationRate: inflationRate,
-			targetEmergencyFund: targetEmergencyFund
+			targetEmergencyFund: targetEmergencyFund,
+			taxParams: { ...taxParams }
 		};
 		selectedFilingStatus = {
 			label: taxParams.filingStatus.toString(),
@@ -51,7 +53,7 @@
 	}
 
 	function onSave() {
-		({ startYear, durationYears, inflationRate, targetEmergencyFund } = updatedParams);
+		({ startYear, durationYears, inflationRate, targetEmergencyFund, taxParams } = updatedParams);
 		taxParams.filingStatus = selectedFilingStatus.value;
 		editing = false;
 	}
@@ -102,6 +104,13 @@
 					</Select.Content>
 				</Select.Root>
 			</div>
+			<div class="flex items-center gap-2">
+				<Label for="general-state-tax">Effective State Income Tax Rate</Label>
+				<NumberInput
+					bind:value={updatedParams.taxParams.effectiveStateTaxRate}
+					id="general-state-tax"
+				/>
+			</div>
 			<div class="flex justify-between">
 				<Button type="submit">Save</Button>
 				<Button variant="outline" on:click={onCancel}>Cancel</Button>
@@ -128,6 +137,10 @@
 			<div class="flex gap-2">
 				<span class="text-sm font-medium">Tax Filing Status</span>
 				<span class="text-sm">{taxParams.filingStatus.toString()}</span>
+			</div>
+			<div class="flex gap-2">
+				<span class="text-sm font-medium">Effective State Income Tax Rate</span>
+				<span class="text-sm">{taxParams.effectiveStateTaxRate}</span>
 			</div>
 			<div>
 				<Button variant="secondary" on:click={onEdit}>Edit</Button>

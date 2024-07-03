@@ -39,7 +39,6 @@
 			assetDatasets.push({
 				label: asset.name,
 				data: [],
-				borderWidth: 1,
 				borderColor: SECONDARY_LINE_COLORS[colorIdx],
 				backgroundColor: SECONDARY_LINE_COLORS[colorIdx]
 			});

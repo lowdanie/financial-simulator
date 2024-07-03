@@ -10,6 +10,7 @@
 
 	const dispatch = createEventDispatcher();
 	export let person: Person;
+	export let personInUse: boolean;
 
 	let updatedPerson: Person = { ...person };
 	let updatedDateString = dateToInputDateString(updatedPerson.birthday);
@@ -64,7 +65,7 @@
 				</div>
 				<div class="flex justify-between">
 					<Button variant="secondary" on:click={onEdit}>Edit</Button>
-					<Button variant="destructive" on:click={() => dispatch('remove', person)}>Delete</Button>
+					<Button disabled={personInUse} variant="destructive" on:click={() => dispatch('remove', person)}>Delete</Button>
 				</div>
 			</div>
 		{/if}

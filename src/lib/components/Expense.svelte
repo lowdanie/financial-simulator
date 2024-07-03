@@ -14,16 +14,16 @@
 
 	let updatedExpense: ExpenseParameters = { ...expense };
 	let updatedDateStrings = {
-		start: dateToInputMonthString(expense.start),
-		end: dateToInputMonthString(expense.end)
+		start: dateToInputMonthString(expense.startDate),
+		end: dateToInputMonthString(expense.endDate)
 	};
 	let editing = false;
 
 	function onSave() {
 		expense = {
 			...updatedExpense,
-			start: inputMonthStringToDate(updatedDateStrings.start),
-			end: inputMonthStringToDate(updatedDateStrings.end)
+			startDate: inputMonthStringToDate(updatedDateStrings.start),
+			endDate: inputMonthStringToDate(updatedDateStrings.end)
 		};
 		dispatch('update', expense);
 		editing = false;
@@ -84,11 +84,11 @@
 				</div>
 				<div class="flex gap-2">
 					<span class="text-sm font-medium">Start</span>
-					<span class="text-sm">{dateToInputMonthString(expense.start)}</span>
+					<span class="text-sm">{dateToInputMonthString(expense.startDate)}</span>
 				</div>
 				<div class="flex gap-2">
 					<span class="text-sm font-medium">End</span>
-					<span class="text-sm">{dateToInputMonthString(expense.end)}</span>
+					<span class="text-sm">{dateToInputMonthString(expense.endDate)}</span>
 				</div>
 				<div class="flex gap-2">
 					<span class="text-sm font-medium">Monthly Expense</span>

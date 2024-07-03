@@ -11,6 +11,11 @@ import { TaxManager, type TaxManagerParameters } from './tax_manager';
 import type { TaxDocument1099R } from './tax_document';
 import { BrokerageAccount, type BrokerageAccountParameters } from './brokerage_account';
 
+let personId = 0;
+export function generatePersonId(): number {
+	return personId++;
+}
+
 export interface MonthAssetSummary {
 	name: string;
 	value: number;

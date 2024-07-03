@@ -12,10 +12,12 @@
 	let updatedAccount: SavingsAccountParameters = { ...account };
 	let editing = false;
 
+	function onEdit() {
+		updatedAccount = {...account};
+		editing = true;
+	}
 	function onSave() {
 		account = { ...updatedAccount };
-		console.log('updated savings:');
-		console.log(JSON.stringify(updatedAccount));
 		editing = false;
 	}
 
@@ -66,7 +68,7 @@
 				<span class="text-sm">{account.annualPercentageYield}</span>
 			</div>
 			<div>
-				<Button variant="secondary" on:click={() => (editing = true)}>Edit</Button>
+				<Button variant="secondary" on:click={onEdit}>Edit</Button>
 			</div>
 		</div>
 	{/if}

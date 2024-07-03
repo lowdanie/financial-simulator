@@ -3,7 +3,7 @@ import type { TaxDocument1098 } from './tax_document';
 import { annualToMonthlyReturnRate } from './utils';
 
 let houseId = 0;
-export function generateHouseId() {
+export function generateHouseId(): number {
 	return houseId++;
 }
 

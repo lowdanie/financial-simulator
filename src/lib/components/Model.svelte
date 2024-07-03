@@ -8,6 +8,7 @@
 	import SavingsAccount from './SavingsAccount.svelte';
 	import GeneralParameters from './GeneralParameters.svelte';
 	import Houses from './Houses.svelte';
+	import JsonInput from './JsonInput.svelte';
 
 	import type { ModelParameters } from '$lib/model/model';
 	import Brokerage from './Brokerage.svelte';
@@ -22,7 +23,8 @@
 		'Houses',
 		'Savings Account',
 		'Brokerage Account',
-		'401k Accounts'
+		'401k Accounts',
+		'JSON Input'
 	];
 	let activeParamName = 'General';
 
@@ -55,7 +57,11 @@
 			/>
 		</div>
 		<div class={getDisplayType(activeParamName == 'People')}>
-			<People bind:people={params.people} />
+			<People
+				bind:people={params.people}
+				jobs={params.jobs}
+				retirement401kAccounts={params.retirement401kAccounts}
+			/>
 		</div>
 		<div class={getDisplayType(activeParamName == 'Jobs')}>
 			<Jobs bind:jobs={params.jobs} people={params.people} />
@@ -77,6 +83,9 @@
 				bind:accounts={params.retirement401kAccounts}
 				people={params.people}
 			/>
+		</div>
+		<div class={getDisplayType(activeParamName == 'JSON Input')}>
+			<JsonInput bind:modelParams={params} />
 		</div>
 	</div>
 </div>

@@ -1,4 +1,3 @@
-import type { AlignHorizontalDistributeCenterIcon } from 'lucide-svelte';
 import { type Age } from './date_utils';
 import {
 	type TaxDocumentW2,
@@ -103,6 +102,27 @@ function computeProgressiveTax(income: number, taxBrackets: TaxBracket[]) {
 	return tax;
 }
 
+function computeTotalIncome(
+	docW2s: TaxDocumentW2[],
+	doc1099Ints: TaxDocument1099Int[],
+	doc1099Rs: TaxDocument1099R[]
+): number {
+	return (
+		docW2s.reduce((partialSum, d) => partialSum + d.taxableIncome, 0) +
+		doc1099Ints.reduce((partialSum, d) => partialSum + d.interest, 0) +
+		doc1099Rs.reduce((partialSum, d) => partialSum + d.taxableIncome, 0)
+	);
+}
+
+function computeStateIncomeTax(
+	effectiveTaxRate: number,
+	docW2s: TaxDocumentW2[],
+	doc1099Ints: TaxDocument1099Int[],
+	doc1099Rs: TaxDocument1099R[]
+): number {
+	return (effectiveTaxRate / 100) * computeTotalIncome(docW2s, doc1099Ints, doc1099Rs);
+}
+
 function computeFederalIncomeTax(
 	taxData: TaxData,
 	docW2s: TaxDocumentW2[],
@@ -110,24 +130,20 @@ function computeFederalIncomeTax(
 	doc1099Rs: TaxDocument1099R[],
 	doc1098s: TaxDocument1098[]
 ): number {
-	let taxableIncome = 0;
-	taxableIncome = docW2s.reduce((partialSum, d) => partialSum + d.taxableIncome, taxableIncome);
-	taxableIncome = doc1099Ints.reduce((partialSum, d) => partialSum + d.interest, taxableIncome);
-	taxableIncome = doc1099Rs.reduce((partialSum, d) => partialSum + d.taxableIncome, taxableIncome);
+	let taxableIncome = computeTotalIncome(docW2s, doc1099Ints, doc1099Rs);
 
 	const houseDeductible = doc1098s.reduce(
 		(partialSum, d) => partialSum + d.mortgageInterestPayed + d.propertyTax,
 		0
 	);
 	const deduction = Math.max(houseDeductible, taxData.standardDeduction);
-
 	taxableIncome = Math.max(0, taxableIncome - deduction);
 
 	return computeProgressiveTax(taxableIncome, taxData.incomeTaxBrackets);
 }
 
 function computeCapitalGainsTax(taxData: TaxData, doc1099Bs: TaxDocument1099B[]): number {
-	let totalGains = doc1099Bs.reduce(
+	const totalGains = doc1099Bs.reduce(
 		(previousValue, doc) => previousValue + Math.max(0, doc.proceeds - doc.costBasis),
 		0
 	);
@@ -137,6 +153,7 @@ function computeCapitalGainsTax(taxData: TaxData, doc1099Bs: TaxDocument1099B[])
 
 export interface TaxManagerParameters {
 	filingStatus: FilingStatus;
+	effectiveStateTaxRate: number;
 }
 
 export class TaxManager {
@@ -161,7 +178,19 @@ export class TaxManager {
 	): number {
 		const taxData = this.previousTaxData;
 
-		const incomeTax = computeFederalIncomeTax(taxData, docW2s, doc1099Ints, doc1099Rs, doc1098s);
+		const federalIncomeTax = computeFederalIncomeTax(
+			taxData,
+			docW2s,
+			doc1099Ints,
+			doc1099Rs,
+			doc1098s
+		);
+		const stateIncomeTax = computeStateIncomeTax(
+			this.params.effectiveStateTaxRate,
+			docW2s,
+			doc1099Ints,
+			doc1099Rs
+		);
 		const capitalGainsTax = computeCapitalGainsTax(taxData, doc1099Bs);
 
 		let early401kWithdrawalPenalty = 0;
@@ -173,7 +202,10 @@ export class TaxManager {
 		}
 
 		const propertyTax = doc1098s.reduce((partialSum, d) => partialSum + d.propertyTax, 0);
-		return incomeTax + capitalGainsTax + early401kWithdrawalPenalty + propertyTax;
+
+		return (
+			federalIncomeTax + stateIncomeTax + capitalGainsTax + early401kWithdrawalPenalty + propertyTax
+		);
 	}
 
 	getMax401kContribution() {

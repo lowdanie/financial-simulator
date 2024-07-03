@@ -69,6 +69,6 @@
 		{/each}
 	</ul>
 	<div>
-		<Button on:click={addJob}>Add</Button>
+		<Button disabled={people.length == 0} on:click={addJob}>Add</Button>
 	</div>
 </div>

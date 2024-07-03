@@ -10,8 +10,8 @@
 	const defaultExpense: ExpenseParameters = {
 		id: 0,
 		name: '',
-		start: new Date(2025, 0, 1),
-		end: new Date(2035, 0, 2),
+		startDate: new Date(2025, 0, 1),
+		endDate: new Date(2035, 0, 2),
 		initialMonthlyExpense: 1000,
 		realIncreaseRate: 0
 	};

@@ -3,8 +3,8 @@ import { Expense, type ExpenseParameters } from './expense';
 const params: ExpenseParameters = {
 	id: 0,
 	name: 'expense',
-	start: new Date(2024, 0, 10),
-	end: new Date(2025, 1, 10),
+	startDate: new Date(2024, 0, 10),
+	endDate: new Date(2025, 1, 10),
 	initialMonthlyExpense: 1000,
 	realIncreaseRate: 1
 };

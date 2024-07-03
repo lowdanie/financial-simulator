@@ -30,7 +30,8 @@
 			managementFeeRate: 0.5
 		},
 		taxManager: {
-			filingStatus: FilingStatus.JOINT
+			filingStatus: FilingStatus.JOINT,
+			effectiveStateTaxRate: 5
 		}
 	};
 </script>

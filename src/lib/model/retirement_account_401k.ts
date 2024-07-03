@@ -4,7 +4,7 @@ import { annualToMonthlyReturnRate } from './utils';
 import { type Person } from './person';
 
 let retirement401kId = 0;
-export function generateRetirement401kId() {
+export function generateRetirement401kId(): number {
 	return retirement401kId++;
 }
 

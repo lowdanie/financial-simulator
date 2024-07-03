@@ -4,7 +4,7 @@ import { RetirementAccount401k, generateRetirement401kId } from './retirement_ac
 import type { Person } from './person';
 
 let jobId = 0;
-export function generateJobId() {
+export function generateJobId(): number {
 	return jobId++;
 }
 

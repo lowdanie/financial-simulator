@@ -1,8 +1,10 @@
 import { type TaxManagerParameters, TaxManager, FilingStatus } from './tax_manager';
 
 const PARAMS: TaxManagerParameters = {
-	filingStatus: FilingStatus.JOINT
+	filingStatus: FilingStatus.JOINT,
+	effectiveStateTaxRate: 5
 };
+
 const INFLATION_RATE = 3;
 const INFLATION_FACTOR = 1.03;
 
@@ -21,7 +23,7 @@ describe('test TaxManager', () => {
 		expect(taxManager.previousTaxData.standardDeduction).toBeCloseTo(29200);
 		expect(taxManager.currentTaxData.standardDeduction).toBeCloseTo(INFLATION_FACTOR * 29200);
 	});
-	test('computePreviousYearFederalTax', () => {
+	test('computePreviousYearTax', () => {
 		let taxManager = new TaxManager(PARAMS, 2024, INFLATION_RATE);
 		const tax = taxManager.computePreviousYearTax(
 			[
@@ -43,14 +45,21 @@ describe('test TaxManager', () => {
 			],
 			[{ year: 2023, mortgageInterestPayed: 100, propertyTax: 1000 }]
 		);
-		const totalIncome = 100000 + 50000 + 10000 - 29200;
-		const expectedIncomeTax = 0.1 * 22000 + 0.12 * (89450 - 22000) + 0.22 * (totalIncome - 89450);
+		const totalIncome = 100000 + 50000 + 10000;
+		const taxableFederalIncome = totalIncome - 29200;
+		const expectedFederalIncomeTax =
+			0.1 * 22000 + 0.12 * (89450 - 22000) + 0.22 * (taxableFederalIncome - 89450);
+		const expectedStateIncomeTax = 0.05 * totalIncome;
 		const expectedCapitalGainsTax = 0.15 * 100;
 		const expected401kPenalty = 0.1 * 10000;
 		const expectedPropertyTax = 1000;
 
 		expect(tax).toBeCloseTo(
-			expectedIncomeTax + expectedCapitalGainsTax + expected401kPenalty + expectedPropertyTax
+			expectedStateIncomeTax +
+				expectedFederalIncomeTax +
+				expectedCapitalGainsTax +
+				expected401kPenalty +
+				expectedPropertyTax
 		);
 	});
 });
